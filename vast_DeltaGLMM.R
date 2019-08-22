@@ -27,7 +27,7 @@ require(VAST)
 setwd(dir = dirname)
 tok = read.csv("new_chiba3.csv", fileEncoding = "CP932")
 tok = rbind(filter(tok, between(M, 4, 9)) %>% mutate(Season = "SS"), filter(tok, between(M, 1, 3)) %>% mutate(Season = "AW"), filter(tok, between(M, 10, 12)) %>% mutate(Season = "AW"))
-sakana = c("ishigarei", "konosiro", "kouika", "kurumaebi", "maanago", "makogarei", "suzuki")[5]
+sakana = c("isigarei", "konosiro", "kouika", "kurumaebi", "maanago", "makogarei", "suzuki")[5]
 df = filter(tok, FISH == sakana)
 summary(df)
 
