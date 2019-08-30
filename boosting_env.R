@@ -34,42 +34,36 @@ isi_pred = c()
 isi_mae = c()
 isi_imp = c()
 
-for(i in 1:4){
-  df_mat_isi = filter(isi, n_season == i) %>% 
-    select(log_abundance, do_0, do_5, do_10, do_20, do_50, sal_0, sal_5, sal_10, sal_20, sal_50, wt_0, wt_5, wt_10, wt_20, wt_50)
+#for(i in 1:4){
+  df_mat_isi = isi %>% 
+    #filter(isi, n_season == i) %>% 
+    #select(log_abundance, do_0, do_5, do_10, do_20, do_50, sal_0, sal_5, sal_10, sal_20, sal_50, wt_0, wt_5, wt_10, wt_20, wt_50)
+    select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
   
   df_mat_isi = na.omit(df_mat_isi)
-  nr = nrow(df_mat_isi)
-  sprit = sample(nr, replace = F, nr*0.7)
-  nr*0.7
-  train_data_isi = df_mat_isi[sprit, ]
-  test_data_isi = df_mat_isi[-sprit, ]
+  # nr = nrow(df_mat_isi)
+  # sprit = sample(nr, replace = F, nr*0.7)
+  # nr*0.7
+  # train_data_isi = df_mat_isi[sprit, ]
+  # test_data_isi = df_mat_isi[-sprit, ]
   summary(train_data_isi)
   
   set.seed(0)
   train_isi = train(
     #dens_sar ~ adult_sar+dens_anc+dens_uru+volume+m_SST+m_PDO+m_IPO+knot_i2+days+int,
     log_abundance ~ .,
-    data = train_data_isi,
+    #data = train_data_isi,
+    data = df_mat_isi,
     method = "xgbTree",
     preProcess = c("center", "scale"),
     trControl = trainControl(method = "cv"),
     tuneLength = 5
   )
-  save(train_isi, file = paste0("train_isi", i, ".RData"))
+  save(train_isi, file = paste0("tuned_params_isi", ".RData"))
   
   #best params
   best_isi = train_isi$bestTune
-  
-  #標準化
- data = df_mat_isi
-
- data =   normalizeFeatures(data, target = "log_abundance")
-
-  #make DMatrix
-  d_isi = xgb.DMatrix(sparse.model.matrix(log_abundance ~ ., data = data), label = data[, 1])
-
-    params = list(
+  params = list(
     booster           = 'gbtree',
     objective         = 'reg:linear',
     eval_metric       = 'mae',
@@ -80,6 +74,58 @@ for(i in 1:4){
     subsample         = best_isi$subsample,
     colsample_bytree  = best_isi$colsample_bytree
   )
+  
+  #標準化
+  for(i in 1:4){
+    assign(paste0("isi", i),
+           data = filter(isi, n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+           )
+  }
+  
+  nr = nrow(df_mat_isi)/4
+  sprit = sample(nr, replace = F, nr*0.7)
+  
+  train_isi1 = isi1[sprit, ]
+  test_isi1 = isi1[-sprit, ]
+  train_isi2 = isi2[sprit, ]
+  test_isi2 = isi2[-sprit, ]
+  train_isi3 = isi3[sprit, ]
+  test_isi3 = isi3[-sprit, ]
+  train_isi4 = isi4[sprit, ]
+  test_isi4 = isi4[-sprit, ]
+  
+  for(i in 1:4){
+    data = get(paste0("train_isi", i))
+    assign(paste0("train_isi",i),
+           normalizeFeatures(data, target = "log_abundance")
+           )
+  }
+  summary(train_isi4)
+  
+  #make DMatrix
+  for(i in 1:4){
+    data = get(paste0("train_isi", i))
+    assign(paste0("d_isi",i),
+           xgb.DMatrix(sparse.model.matrix(log_abundance ~ ., data = data), label = data[, 1]))
+  }
+
+  for(i in 1:4){
+    data = get(paste0("train_isi", i))
+    
+    X = as.matrix(data %>% mutate(log_abundance = NULL))
+    nrounds = best_isi$nrounds
+    model = xgboost(
+      data = X,
+      label = data$log_abundance,
+      nrounds = nrounds,
+      params = params)
+    
+    save(model, file = paste0("model_isi", i, ".RData"))
+    
+    assign(paste0("model_isi", i),
+           model)
+  }
+  
   
   
     X = as.matrix(data %>% mutate(log_abundance = NULL))
@@ -101,7 +147,7 @@ for(i in 1:4){
     isi_imp = rbind(isi_imp, imp)
             
 
-}
+
 isi_imp = mutate(isi_imp, n_season = rep(1:4, each = 15))
 head(isi,3)
 t = isi %>% select(season, n_season, species) %>%
