@@ -11,6 +11,8 @@
 #         then, calculate the importance in each variable
 # 
 # ---------------------------------------------------------------
+rm(list = ls())
+
 require(plyr)
 require(dplyr)
 require(xgboost)
@@ -29,145 +31,119 @@ setwd("/Users/Yuki/Dropbox/Network/revised_data")
 isi = read.csv("boost_isi.csv", fileEncoding = "CP932")
 isi = isi[, -1]
 summary(isi)
+isi = isi %>% mutate(do_mid = (do_5+do_10+do_20)/3, sal_mid = (sal_5+sal_10+sal_20)/3, wt_mid = (wt_5+wt_10+wt_20)/3)
+df_mat_isi = isi %>% 
+  select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+df_isi = na.omit(df_mat_isi)
+summary(df_isi)
 
-isi_pred = c()
-isi_mae = c()
-isi_imp = c()
+set.seed(0)
+train_isi = train(
+  #dens_sar ~ adult_sar+dens_anc+dens_uru+volume+m_SST+m_PDO+m_IPO+knot_i2+days+int,
+  log_abundance ~ .,
+  data = df_isi,
+  method = "xgbTree",
+  preProcess = c("center", "scale"),
+  trControl = trainControl(method = "cv"),
+  tuneLength = 5
+)
+save(train_isi, file = paste0("tuned_params_isi", ".RData"))
 
-#for(i in 1:4){
-  df_mat_isi = isi %>% 
-    #filter(isi, n_season == i) %>% 
-    #select(log_abundance, do_0, do_5, do_10, do_20, do_50, sal_0, sal_5, sal_10, sal_20, sal_50, wt_0, wt_5, wt_10, wt_20, wt_50)
-    select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
-  
-  df_mat_isi = na.omit(df_mat_isi)
-  # nr = nrow(df_mat_isi)
-  # sprit = sample(nr, replace = F, nr*0.7)
-  # nr*0.7
-  # train_data_isi = df_mat_isi[sprit, ]
-  # test_data_isi = df_mat_isi[-sprit, ]
-  summary(train_data_isi)
-  
-  set.seed(0)
-  train_isi = train(
-    #dens_sar ~ adult_sar+dens_anc+dens_uru+volume+m_SST+m_PDO+m_IPO+knot_i2+days+int,
-    log_abundance ~ .,
-    #data = train_data_isi,
-    data = df_mat_isi,
-    method = "xgbTree",
-    preProcess = c("center", "scale"),
-    trControl = trainControl(method = "cv"),
-    tuneLength = 5
-  )
-  save(train_isi, file = paste0("tuned_params_isi", ".RData"))
-  
-  #best params
-  best_isi = train_isi$bestTune
-  params = list(
-    booster           = 'gbtree',
-    objective         = 'reg:linear',
-    eval_metric       = 'mae',
-    eta               = best_isi$eta,
-    gamma             = best_isi$gamma,
-    max_depth         = best_isi$max_depth,
-    min_child_weight  = best_isi$min_child_weight,
-    subsample         = best_isi$subsample,
-    colsample_bytree  = best_isi$colsample_bytree
-  )
-  
-  #標準化
-  for(i in 1:4){
-    assign(paste0("isi", i),
-           filter(isi, n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
-           )
-  }
-  
-  nr = nrow(df_mat_isi)/4
+best_isi = train_isi$bestTune
+params = list(
+  booster           = 'gbtree',
+  objective         = 'reg:linear',
+  eval_metric       = 'mae',
+  eta               = best_isi$eta,
+  gamma             = best_isi$gamma,
+  max_depth         = best_isi$max_depth,
+  min_child_weight  = best_isi$min_child_weight,
+  subsample         = best_isi$subsample,
+  colsample_bytree  = best_isi$colsample_bytree
+)
+
+for(i in 1:4){
+  assign(paste0("isi", i),
+         isi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+         )
+}
+
+for(i in 1:4){
+  data = get(paste0("isi", i))
+  data = na.omit(data)
+  nr = nrow(data)
   sprit = sample(nr, replace = F, nr*0.7)
   
-  train_isi1 = isi1[sprit, ]
-  test_isi1 = isi1[-sprit, ]
-  train_isi2 = isi2[sprit, ]
-  test_isi2 = isi2[-sprit, ]
-  train_isi3 = isi3[sprit, ]
-  test_isi3 = isi3[-sprit, ]
-  train_isi4 = isi4[sprit, ]
-  test_isi4 = isi4[-sprit, ]
-  
-  for(i in 1:4){
-    data = get(paste0("train_isi", i))
-    assign(paste0("train_isi",i),
-           normalizeFeatures(data, target = "log_abundance")
-           )
-  }
-  summary(train_isi4)
-  
-  #make DMatrix
-  for(i in 1:4){
-    data = get(paste0("train_isi", i))
-    assign(paste0("d_isi",i),
-           xgb.DMatrix(sparse.model.matrix(log_abundance ~ ., data = data), label = data[, 1]))
-  }
+  assign(paste0("tr_isi", i),
+         data[sprit, ])
+  assign(paste0("te_isi", i),
+         data[-sprit, ])
+}
 
-  for(i in 1:4){
-    data = get(paste0("train_isi", i))
-    
-    X = as.matrix(data %>% mutate(log_abundance = NULL))
-    nrounds = best_isi$nrounds
-    model = xgboost(
-      data = X,
-      label = data$log_abundance,
-      nrounds = nrounds,
-      params = params)
-    
-    save(model, file = paste0("model_isi", i, ".RData"))
-    
-    assign(paste0("model_isi", i),
-           model)
-  }
+for(i in 1:4){
+  tr_data = get(paste0("tr_isi", i))
+  te_data = get(paste0("te_isi", i))
   
-  isi_imp = c()
-  for(i in 1:4){
-    data = get(paste0("d_isi", i))
-    model = get(paste0("model_isi", i))
-    imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
-    isi_imp = rbind(isi_imp, imp)
-  }
-  
-  isi_pred = c()
-  for(i in 1:4){
-    data = get(paste0("test_isi", i))
-    model = get(paste0("model_isi", i))
-    pred = data_frame(pred = predict(model = model, as.matrix(data[, -1])), obs = data[, 1])
-    isi_pred = rbind(isi_pred, pred)
-  }
-  
-  isi_mae = c()
-  for(i in 1:4){
-    pred = 
-    m = mean(sum(abs(pred$pred-pred$obs)))
-    isi_mae = rbind(isi_mae, m)
-  }
-  
+  assign(paste0("tr_isi", i),
+         normalizeFeatures(tr_data, target = "log_abundance"))
+  assign(paste0("te_isi", i),
+         normalizeFeatures(te_data, target = "log_abundance"))
+}
+summary(tr_isi1)
 
-            
+for(i in 1:4){
+  data = get(paste0("tr_isi", i))
+  
+  X = as.matrix(data %>% mutate(log_abundance = NULL))
+  nrounds = best_isi$nrounds
+  model = xgboost(
+    data = X,
+    label = data$log_abundance,
+    nrounds = nrounds,
+    params = params)
+  
+  save(model, file = paste0("model_isi", i, ".RData"))
+  assign(paste0("model_isi", i),
+         model)
+}
 
+isi_imp = c()
+for(i in 1:4){
+  data = get(paste0("tr_isi", i))
+  model = get(paste0("model_isi", i))
+  imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
+  imp$n_season = paste0(i)
+  isi_imp = rbind(isi_imp, imp)
+}
 
-isi_imp = mutate(isi_imp, n_season = rep(1:4, each = 15))
-head(isi,3)
-t = isi %>% select(season, n_season, species) %>%
-  distinct(n_season, .keep_all = T)
-isi_imp = left_join(isi_imp, t, by = "n_season")
+isi_pred = c()
+for(i in 1:4){
+  data = get(paste0("te_isi", i))
+  model = get(paste0("model_isi", i))
+  pred = data.frame(predict(model, as.matrix(data[, -1])), data[, 1])
+  colnames(pred) = c("pred", "obs")
+  pred$n_season = paste0(i)
+  isi_pred = rbind(isi_pred, pred)
+}
+
+isi_cor = c()
+for(i in 1:4){
+  data = isi_pred %>% filter(n_season == 1)
+  cor = cor(data$obs, data$pred)
+  cor$n_season = paste0(i)
+  isi_cor = rbind(isi_cor, cor)
+}
+
+isi_mae = c()
+for(i in 1:4){
+  pred = isi_pred %>% filter(n_season == i)
+  
+  m = mean(sum(abs(pred$pred - pred$obs)))
+  isi_mae = rbind(isi_mae, m)
+}
+
 write.csv(isi_imp, "isi_imp.csv")
-
-nrow(isi_pred)
-nrow(pred)
-isi_pred = mutate(isi_pred, n_season == rep(1:4, each = 1400))
-isi_pred = left_join(isi_pred, t, by = "n_season")
 write.csv(isi_pred, "isi_pred.csv")
-
-isi_mae = data.frame(isi_mae) %>% mutate(isi_mae, n_season = rep(1:4))
-isi_mae = left_join(isi_mae, t, by = "n_season")
 write.csv(isi_mae, "isi_mae.csv")
 
 
@@ -181,9 +157,12 @@ kono_pred = c()
 kono_mae = c()
 kono_imp = c()
 
-for(i in 1:4){
-  df_mat_kono = filter(kono, n_season == i) %>% 
-    select(log_abundance, do_0, do_5, do_10, do_20, do_50, sal_0, sal_5, sal_10, sal_20, sal_50, wt_0, wt_5, wt_10, wt_20, wt_50)
+kono = kono %>% mutate(do_mid = (do_5+do_10+do_20)/3, sal_mid = (sal_5+sal_10+sal_20)/3, wt_mid = (wt_5+wt_10+wt_20)/3)
+
+df_mat_kono =  
+  filter(kono, n_season == i) %>% 
+  select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+#select(log_abundance, do_0, do_
   
   df_mat_kono = na.omit(df_mat_kono)
   nr = nrow(df_mat_kono)
@@ -203,7 +182,7 @@ for(i in 1:4){
     trControl = trainControl(method = "cv"),
     tuneLength = 5
   )
-  save(train_kono, file = paste0("train_kono", i, ".RData"))
+  save(train_kono, file = paste0("tuned_params_kono", i, ".RData"))
   
   #best params
   best_kono = train_kono$bestTune
@@ -248,7 +227,7 @@ for(i in 1:4){
   kono_imp = rbind(kono_imp, imp)
   
   
-}
+
 kono_imp = mutate(kono_imp, n_season = rep(1:4, each = 15))
 head(kono,3)
 t = kono %>% select(season, n_season, species) %>%
@@ -272,6 +251,20 @@ setwd("/Users/Yuki/Dropbox/Network/revised_data")
 ika = read.csv("boost_ika.csv", fileEncoding = "CP932")
 ika = ika[, -1]
 summary(ika)
+ika = ika %>% mutate(do_mid = (do_5+do_10+do_20)/3, sal_mid = (sal_5+sal_10+sal_20)/3, wt_mid = (wt_5+wt_10+wt_20)/3)
+
+df_mat_ika =  
+  filter(ika, n_season == i) %>% 
+  select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+#select(log_abundance, do_0, do_
+
+df_mat_kono = na.omit(df_mat_kono)
+nr = nrow(df_mat_kono)
+sprit = sample(nr, replace = F, nr*0.7)
+nr*0.7
+train_data_kono = df_mat_kono[sprit, ]
+test_data_kono = df_mat_kono[-sprit, ]
+summary(train_data_kono)
 
 ika_pred = c()
 ika_mae = c()
