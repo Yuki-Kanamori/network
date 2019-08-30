@@ -78,7 +78,7 @@ isi_imp = c()
   #標準化
   for(i in 1:4){
     assign(paste0("isi", i),
-           data = filter(isi, n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+           filter(isi, n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
            )
   }
   
@@ -126,25 +126,30 @@ isi_imp = c()
            model)
   }
   
+  isi_imp = c()
+  for(i in 1:4){
+    data = get(paste0("d_isi", i))
+    model = get(paste0("model_isi", i))
+    imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
+    isi_imp = rbind(isi_imp, imp)
+  }
   
-  
-    X = as.matrix(data %>% mutate(log_abundance = NULL))
-    nrounds = best_isi$nrounds
-    model_isi = xgboost(
-             data = X,
-             label = data$log_abundance,
-             nrounds = nrounds,
-             params = params)
-    
-    pred = data.frame(predict(model_isi, as.matrix(data[, -1])), data[,1])
-    colnames(pred) = c("pred", "obs")
+  isi_pred = c()
+  for(i in 1:4){
+    data = get(paste0("test_isi", i))
+    model = get(paste0("model_isi", i))
+    pred = data_frame(pred = predict(model = model, as.matrix(data[, -1])), obs = data[, 1])
     isi_pred = rbind(isi_pred, pred)
-    
+  }
+  
+  isi_mae = c()
+  for(i in 1:4){
+    pred = 
     m = mean(sum(abs(pred$pred-pred$obs)))
     isi_mae = rbind(isi_mae, m)
-    
-    imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model_isi)
-    isi_imp = rbind(isi_imp, imp)
+  }
+  
+
             
 
 
