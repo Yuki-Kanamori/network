@@ -148,6 +148,83 @@ write.csv(isi_cor, "isi_cor.csv")
 write.csv(isi_mae, "isi_mae.csv")
 
 
+
+require(lme4)
+require(glmmTMB)
+#require(car)
+
+# for(i in 1:4){
+#   assign(paste0("isi", i),
+#          isi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+#   )
+# }
+# summary(isi1)
+# 
+# for(i in 1:4){
+#   data = get(paste0("isi",i))
+#   data = na.omit(data)
+#   assign(paste0("isi", i),
+#          normalizeFeatures(data, target = "log_abundance"))
+# }
+
+pre_glm_isi = c()
+for(i in 1:4){
+  data = get(paste0("tr_isi", i))
+  p_data = get(paste0("te_isi", i))
+  
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_isi = rbind(pre_glm_isi, pre_glm)
+}
+
+# pre_boo_isi = c()
+# for(i in 1:4){
+#   load(paste0("model_isi",i,".RData"))
+#   model = get(paste0("model_isi", i))
+#   data = get(paste0("isi", i))
+#   
+#   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+#   boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+#   
+#   pre_boo_isi = rbind(pre_boo_isi, boo)
+# }
+
+isi_pred$model = "Boosting"
+comp_glm_isi = rbind(pre_glm_isi, isi_pred)
+head(isi)
+tag = distinct(isi[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_isi = merge(comp_glm_isi, tag, by = "n_season")
+write.csv(comp_glm_isi, "comp_glm_isi.csv")
+
+comp_glm_isi$model = factor(comp_glm_isi$model, levels = c("GLM", "Boosting"))
+comp_glm_isi$season2 = factor(comp_glm_isi$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_isi, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Ishigarei")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+th = theme(#panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(size = rel(2)),
+  axis.text.y = element_text(size = rel(2)),
+  axis.title.x = element_text(size = rel(2)),
+  axis.title.y = element_text(size = rel(2)),
+  legend.title = element_text(size = 15),
+  strip.text = element_text(size = rel(1.2)))
+g+p+f+lab+theme_bw()+l+th
+
+
+###response curve###
+require(DALEX)
+require(ALEPlot)
+exp_xgb = DALEX::explain(model_isi1, data = as.matrix(te_isi1[,-1]), y = te_isi1[,1])
+ale_xgb = DALEX::variable_response(exp_xgb, variable = "do_50", type = "ale")
+ale_xgb %>% plot()
+
 # konosiro ------------------------------------------------------
 kono = read.csv("boost_kono.csv", fileEncoding = "CP932")
 kono = kono[, -1]
@@ -269,6 +346,77 @@ write.csv(kono_cor, "kono_cor.csv")
 write.csv(kono_mae, "kono_mae.csv")
 
 
+
+require(lme4)
+require(glmmTMB)
+#require(car)
+# for(i in 1:4){
+#   assign(paste0("kono", i),
+#          kono %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+#   )
+# }
+# summary(kono1)
+# 
+# for(i in 1:4){
+#   data = get(paste0("kono",i))
+#   data = na.omit(data)
+#   assign(paste0("kono", i),
+#          normalizeFeatures(data, target = "log_abundance"))
+# }
+
+pre_glm_kono = c()
+for(i in 1:4){
+  data = get(paste0("tr_kono", i))
+  p_data = get(paste0("te_kono", i))
+  
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_kono = rbind(pre_glm_kono, pre_glm)
+}
+
+# pre_boo_kono = c()
+# for(i in 1:4){
+#   load(paste0("model_kono",i,".RData"))
+#   model = get(paste0("model_kono", i))
+#   data = get(paste0("kono", i))
+#   
+#   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+#   boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+#   
+#   pre_boo_kono = rbind(pre_boo_kono, boo)
+# }
+
+kono_pred$model = "Boosting"
+comp_glm_kono = rbind(pre_glm_kono, kono_pred)
+head(kono)
+tag = distinct(kono[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_kono = merge(comp_glm_kono, tag, by = "n_season")
+write.csv(comp_glm_kono, "comp_glm_kono.csv")
+
+comp_glm_kono$model = factor(comp_glm_kono$model, levels = c("GLM", "Boosting"))
+comp_glm_kono$season2 = factor(comp_glm_kono$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_kono, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Konoshiro")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+th = theme(#panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(size = rel(2)),
+  axis.text.y = element_text(size = rel(2)),
+  axis.title.x = element_text(size = rel(2)),
+  axis.title.y = element_text(size = rel(2)),
+  legend.title = element_text(size = 15),
+  strip.text = element_text(size = rel(1.2)))
+g+p+f+lab+theme_bw()+l+th
+
+
+
+
 # kouika --------------------------------------------------------
 ika = read.csv("boost_ika.csv", fileEncoding = "CP932")
 ika = ika[, -1]
@@ -388,6 +536,75 @@ write.csv(ika_imp, "ika_imp.csv")
 write.csv(ika_pred, "ika_pred.csv")
 write.csv(ika_cor, "ika_cor.csv")
 write.csv(ika_mae, "ika_mae.csv")
+
+
+
+require(lme4)
+require(glmmTMB)
+#require(car)
+# for(i in 1:4){
+#   assign(paste0("ika", i),
+#          ika %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+#   )
+# }
+# summary(ika1)
+# 
+# for(i in 1:4){
+#   data = get(paste0("ika",i))
+#   data = na.omit(data)
+#   assign(paste0("ika", i),
+#          normalizeFeatures(data, target = "log_abundance"))
+# }
+
+pre_glm_ika = c()
+for(i in 1:4){
+  data = get(paste0("tr_ika", i))
+  p_data = get(paste0("te_ika", i))
+  
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_ika = rbind(pre_glm_ika, pre_glm)
+}
+
+# pre_boo_ika = c()
+# for(i in 1:4){
+#   load(paste0("model_ika",i,".RData"))
+#   model = get(paste0("model_ika", i))
+#   data = get(paste0("ika", i))
+#   
+#   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+#   boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+#   
+#   pre_boo_ika = rbind(pre_boo_ika, boo)
+# }
+
+ika_pred$model = "Boosting"
+comp_glm_ika = rbind(pre_glm_ika, ika_pred)
+head(ika)
+tag = distinct(ika[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_ika = merge(comp_glm_ika, tag, by = "n_season")
+write.csv(comp_glm_ika, "comp_glm_ika.csv")
+
+comp_glm_ika$model = factor(comp_glm_ika$model, levels = c("GLM", "Boosting"))
+comp_glm_ika$season2 = factor(comp_glm_ika$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_ika, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Kouika")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+th = theme(#panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(size = rel(2)),
+  axis.text.y = element_text(size = rel(2)),
+  axis.title.x = element_text(size = rel(2)),
+  axis.title.y = element_text(size = rel(2)),
+  legend.title = element_text(size = 15),
+  strip.text = element_text(size = rel(1.2)))
+g+p+f+lab+theme_bw()+l+th
 
 
 
@@ -513,6 +730,74 @@ write.csv(ebi_mae, "ebi_mae.csv")
 
 
 
+require(lme4)
+require(glmmTMB)
+#require(car)
+# for(i in 1:4){
+#   assign(paste0("ebi", i),
+#          ebi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+#   )
+# }
+# summary(ebi1)
+# 
+# for(i in 1:4){
+#   data = get(paste0("ebi",i))
+#   data = na.omit(data)
+#   assign(paste0("ebi", i),
+#          normalizeFeatures(data, target = "log_abundance"))
+# }
+
+pre_glm_ebi = c()
+for(i in 1:4){
+  data = get(paste0("tr_ebi", i))
+  p_data = get(paste0("te_ebi", i))
+  
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_ebi = rbind(pre_glm_ebi, pre_glm)
+}
+
+# pre_boo_ebi = c()
+# for(i in 1:4){
+#   load(paste0("model_ebi",i,".RData"))
+#   model = get(paste0("model_ebi", i))
+#   data = get(paste0("ebi", i))
+#   
+#   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+#   boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+#   
+#   pre_boo_ebi = rbind(pre_boo_ebi, boo)
+# }
+
+ebi_pred$model = "Boosting"
+comp_glm_ebi = rbind(pre_glm_ebi, ebi_pred)
+head(ebi)
+tag = distinct(ebi[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_ebi = merge(comp_glm_ebi, tag, by = "n_season")
+write.csv(comp_glm_ebi, "comp_glm_ebi.csv")
+
+comp_glm_ebi$model = factor(comp_glm_ebi$model, levels = c("GLM", "Boosting"))
+comp_glm_ebi$season2 = factor(comp_glm_ebi$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_ebi, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Kurumaebi")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+th = theme(#panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(size = rel(2)),
+  axis.text.y = element_text(size = rel(2)),
+  axis.title.x = element_text(size = rel(2)),
+  axis.title.y = element_text(size = rel(2)),
+  legend.title = element_text(size = 15),
+  strip.text = element_text(size = rel(1.2)))
+g+p+f+lab+theme_bw()+l+th
+
+
 # maanago -------------------------------------------------------
 ana = read.csv("boost_ana.csv", fileEncoding = "CP932")
 ana = ana[, -1]
@@ -634,6 +919,74 @@ write.csv(ana_cor, "ana_cor.csv")
 write.csv(ana_mae, "ana_mae.csv")
 
 
+
+
+require(lme4)
+require(glmmTMB)
+#require(car)
+# for(i in 1:4){
+#   assign(paste0("ana", i),
+#          ana %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+#   )
+# }
+# summary(ana1)
+# 
+# for(i in 1:4){
+#   data = get(paste0("ana",i))
+#   data = na.omit(data)
+#   assign(paste0("ana", i),
+#          normalizeFeatures(data, target = "log_abundance"))
+# }
+
+pre_glm_ana = c()
+for(i in 1:4){
+  data = get(paste0("tr_ana", i))
+  p_data = get(paste0("te_ana", i))
+  
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_ana = rbind(pre_glm_ana, pre_glm)
+}
+
+# pre_boo_ana = c()
+# for(i in 1:4){
+#   load(paste0("model_ana",i,".RData"))
+#   model = get(paste0("model_ana", i))
+#   data = get(paste0("ana", i))
+#   
+#   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+#   boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+#   
+#   pre_boo_ana = rbind(pre_boo_ana, boo)
+# }
+
+ana_pred$model = "Boosting"
+comp_glm_ana = rbind(pre_glm_ana, ana_pred)
+head(ana)
+tag = distinct(ana[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_ana = merge(comp_glm_ana, tag, by = "n_season")
+write.csv(comp_glm_ana, "comp_glm_ana.csv")
+
+comp_glm_ana$model = factor(comp_glm_ana$model, levels = c("GLM", "Boosting"))
+comp_glm_ana$season2 = factor(comp_glm_ana$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_ana, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Maanago")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+th = theme(#panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(size = rel(2)),
+  axis.text.y = element_text(size = rel(2)),
+  axis.title.x = element_text(size = rel(2)),
+  axis.title.y = element_text(size = rel(2)),
+  legend.title = element_text(size = 15),
+  strip.text = element_text(size = rel(1.2)))
+g+p+f+lab+theme_bw()+l+th
 
 
 # makogarei -----------------------------------------------------
@@ -759,6 +1112,75 @@ write.csv(mako_mae, "mako_mae.csv")
 
 
 
+require(lme4)
+require(glmmTMB)
+#require(car)
+# for(i in 1:4){
+#   assign(paste0("mako", i),
+#          mako %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+#   )
+# }
+# summary(mako1)
+# 
+# for(i in 1:4){
+#   data = get(paste0("mako",i))
+#   data = na.omit(data)
+#   assign(paste0("mako", i),
+#          normalizeFeatures(data, target = "log_abundance"))
+# }
+
+pre_glm_mako = c()
+for(i in 1:4){
+  data = get(paste0("tr_mako", i))
+  p_data = get(paste0("te_mako", i))
+  
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_mako = rbind(pre_glm_mako, pre_glm)
+}
+
+# pre_boo_mako = c()
+# for(i in 1:4){
+#   load(paste0("model_mako",i,".RData"))
+#   model = get(paste0("model_mako", i))
+#   data = get(paste0("mako", i))
+#   
+#   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+#   boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+#   
+#   pre_boo_mako = rbind(pre_boo_mako, boo)
+# }
+
+mako_pred$model = "Boosting"
+comp_glm_mako = rbind(pre_glm_mako, mako_pred)
+head(mako)
+tag = distinct(mako[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_mako = merge(comp_glm_mako, tag, by = "n_season")
+write.csv(comp_glm_mako, "comp_glm_mako.csv")
+
+comp_glm_mako$model = factor(comp_glm_mako$model, levels = c("GLM", "Boosting"))
+comp_glm_mako$season2 = factor(comp_glm_mako$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_mako, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Makogarei")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+th = theme(panel.grid.major = element_blank(),
+           #panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(2)),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_text(size = 15),
+           strip.text = element_text(size = rel(1)))
+g+p+f+lab+theme_bw()+l+th
+
+
+
 # suzuki --------------------------------------------------------
 suzu = read.csv("boost_suzu.csv", fileEncoding = "CP932")
 suzu = suzu[, -1]
@@ -879,3 +1301,71 @@ write.csv(suzu_pred, "suzu_pred.csv")
 write.csv(suzu_cor, "suzu_cor.csv")
 write.csv(suzu_mae, "suzu_mae.csv")
 
+
+
+require(lme4)
+require(glmmTMB)
+#require(car)
+# for(i in 1:4){
+#   assign(paste0("mako", i),
+#          mako %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+#   )
+# }
+# summary(mako1)
+# 
+# for(i in 1:4){
+#   data = get(paste0("mako",i))
+#   data = na.omit(data)
+#   assign(paste0("mako", i),
+#          normalizeFeatures(data, target = "log_abundance"))
+# }
+
+pre_glm_mako = c()
+for(i in 1:4){
+  data = get(paste0("tr_mako", i))
+  p_data = get(paste0("te_mako", i))
+  
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_mako = rbind(pre_glm_mako, pre_glm)
+}
+
+# pre_boo_mako = c()
+# for(i in 1:4){
+#   load(paste0("model_mako",i,".RData"))
+#   model = get(paste0("model_mako", i))
+#   data = get(paste0("mako", i))
+#   
+#   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+#   boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+#   
+#   pre_boo_mako = rbind(pre_boo_mako, boo)
+# }
+
+mako_pred$model = "Boosting"
+comp_glm_mako = rbind(pre_glm_mako, mako_pred)
+head(mako)
+tag = distinct(mako[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_mako = merge(comp_glm_mako, tag, by = "n_season")
+write.csv(comp_glm_mako, "comp_glm_mako.csv")
+
+comp_glm_mako$model = factor(comp_glm_mako$model, levels = c("GLM", "Boosting"))
+comp_glm_mako$season2 = factor(comp_glm_mako$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_mako, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Suzuki")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+th = theme(#panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(size = rel(2)),
+  axis.text.y = element_text(size = rel(2)),
+  axis.title.x = element_text(size = rel(2)),
+  axis.title.y = element_text(size = rel(2)),
+  legend.title = element_text(size = 15),
+  strip.text = element_text(size = rel(1.2)))
+g+p+f+lab+theme_bw()+l+th
