@@ -37,7 +37,6 @@ df_mat_isi = isi %>%
 df_isi = na.omit(df_mat_isi)
 summary(df_isi)
 
-set.seed(0)
 train_isi = train(
   log_abundance ~ .,
   data = df_isi,
@@ -47,6 +46,7 @@ train_isi = train(
   tuneLength = 5
 )
 save(train_isi, file = paste0("tuned_params_isi_full", ".RData"))
+load("tuned_params_isi_full.RData")
 
 best_isi = train_isi$bestTune
 params = list(
@@ -67,6 +67,7 @@ for(i in 1:4){
   )
 }
 
+set.seed(0)
 for(i in 1:4){
   data = get(paste0("isi", i))
   data = na.omit(data)
@@ -101,7 +102,7 @@ for(i in 1:4){
     nrounds = nrounds,
     params = params)
   
-  save(model, file = paste0("model_isi", i, ".RData"))
+  #save(model, file = paste0("model_isi", i, ".RData"))
   assign(paste0("model_isi", i),
          model)
 }
@@ -146,6 +147,61 @@ write.csv(isi_pred, "isi_pred_full.csv")
 write.csv(isi_cor, "isi_cor_full.csv")
 write.csv(isi_mae, "isi_mae_full.csv")
 
+require(lme4)
+require(glmmTMB)
+#require(car)
+for(i in 1:4){
+   assign(paste0("isi", i),
+          isi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_5, do_10, do_20, do_50, sal_0, sal_5, sal_10, sal_20, sal_50, wt_0, wt_5, wt_10, wt_20, wt_50)
+   )
+ }
+ summary(isi1)
+
+for(i in 1:4){
+  data = get(paste0("isi",i))
+  data = na.omit(data)
+  assign(paste0("isi", i),
+         normalizeFeatures(data, target = "log_abundance"))
+}
+ 
+pre_glm_isi = c()
+for(i in 1:4){
+ data = get(paste0("isi", i))
+ glm = glm(log_abundance ~ ., data = data, family = gaussian)
+ pre_glm = data.frame(pred = predict(glm, type = "response"), obs = data[,1])
+ pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+ pre_glm_isi = rbind(pre_glm_isi, pre_glm)
+}
+
+pre_boo_isi = c()
+for(i in 1:4){
+  load(paste0("model_isi",i,".RData"))
+  model = get(paste0("model_isi", i))
+  data = get(paste0("isi", i))
+  
+  boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+  boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+
+  pre_boo_isi = rbind(pre_boo_isi, boo)
+  }
+
+comp_glm_isi = rbind(pre_glm_isi, pre_boo_isi)
+head(isi)
+tag = distinct(isi[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_isi = merge(comp_glm_isi, tag, by = "n_season")
+write.csv(comp_glm_isi, "comp_glm_isi_full.csv")
+
+comp_glm_isi$model = factor(comp_glm_isi$model, levels = c("GLM", "Boosting"))
+comp_glm_isi$season2 = factor(comp_glm_isi$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_isi, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Ishigarei")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+g+p+f+lab+theme_bw()+l
 
 
 # konosiro ------------------------
@@ -168,6 +224,7 @@ train_kono = train(
   tuneLength = 5
 )
 save(train_kono, file = paste0("tuned_params_kono_full", ".RData"))
+load("tuned_params_kono_full.RData")
 
 best_kono = train_kono$bestTune
 params = list(
@@ -266,6 +323,64 @@ write.csv(kono_imp, "kono_imp_full.csv")
 write.csv(kono_pred, "kono_pred_full.csv")
 write.csv(kono_cor, "kono_cor_full.csv")
 write.csv(kono_mae, "kono_mae_full.csv")
+
+
+require(lme4)
+require(glmmTMB)
+#require(car)
+for(i in 1:4){
+  assign(paste0("kono", i),
+         kono %>% filter(n_season == i) %>% select(log_abundance, do_0, do_5, do_10, do_20, do_50, sal_0, sal_5, sal_10, sal_20, sal_50, wt_0, wt_5, wt_10, wt_20, wt_50)
+  )
+}
+summary(kono1)
+
+for(i in 1:4){
+  data = get(paste0("kono",i))
+  data = na.omit(data)
+  assign(paste0("kono", i),
+         normalizeFeatures(data, target = "log_abundance"))
+}
+
+pre_glm_kono = c()
+for(i in 1:4){
+  data = get(paste0("kono", i))
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, type = "response"), obs = data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_kono = rbind(pre_glm_kono, pre_glm)
+}
+
+pre_boo_kono = c()
+for(i in 1:4){
+  load(paste0("model_kono",i,".RData"))
+  model = get(paste0("model_kono", i))
+  data = get(paste0("kono", i))
+  
+  boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+  boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+  
+  pre_boo_kono = rbind(pre_boo_kono, boo)
+}
+
+comp_glm_kono = rbind(pre_glm_kono, pre_boo_kono)
+head(kono)
+tag = distinct(kono[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_kono = merge(comp_glm_kono, tag, by = "n_season")
+write.csv(comp_glm_kono, "comp_glm_kono_full.csv")
+
+comp_glm_kono$model = factor(comp_glm_kono$model, levels = c("GLM", "Boosting"))
+comp_glm_kono$season2 = factor(comp_glm_kono$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_kono, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Konoshiro")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+g+p+f+lab+theme_bw()+l
+
 
 
 
@@ -388,6 +503,63 @@ write.csv(ika_pred, "ika_pred_full.csv")
 write.csv(ika_cor, "ika_cor_full.csv")
 write.csv(ika_mae, "ika_mae_full.csv")
 
+
+
+require(lme4)
+require(glmmTMB)
+#require(car)
+for(i in 1:4){
+  assign(paste0("ika", i),
+         ika %>% filter(n_season == i) %>% select(log_abundance, do_0, do_5, do_10, do_20, do_50, sal_0, sal_5, sal_10, sal_20, sal_50, wt_0, wt_5, wt_10, wt_20, wt_50)
+  )
+}
+summary(ika1)
+
+for(i in 1:4){
+  data = get(paste0("ika",i))
+  data = na.omit(data)
+  assign(paste0("ika", i),
+         normalizeFeatures(data, target = "log_abundance"))
+}
+
+pre_glm_ika = c()
+for(i in 1:4){
+  data = get(paste0("ika", i))
+  glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  pre_glm = data.frame(pred = predict(glm, type = "response"), obs = data[,1])
+  pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
+  pre_glm_ika = rbind(pre_glm_ika, pre_glm)
+}
+
+pre_boo_ika = c()
+for(i in 1:4){
+  load(paste0("model_ika",i,".RData"))
+  model = get(paste0("model_ika", i))
+  data = get(paste0("ika", i))
+  
+  boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
+  boo = boo %>% mutate(n_season = paste0(i), model = "Boosting")
+  
+  pre_boo_ika = rbind(pre_boo_ika, boo)
+}
+
+comp_glm_ika = rbind(pre_glm_ika, pre_boo_ika)
+head(ika)
+tag = distinct(ika[, 3:4], .keep_all = F)
+tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
+comp_glm_ika = merge(comp_glm_ika, tag, by = "n_season")
+write.csv(comp_glm_ika, "comp_glm_ika_full.csv")
+
+comp_glm_ika$model = factor(comp_glm_ika$model, levels = c("GLM", "Boosting"))
+comp_glm_ika$season2 = factor(comp_glm_ika$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
+
+require(ggplot2)
+g = ggplot(data = comp_glm_ika, aes(x = obs, y = pred))
+p = geom_point()
+f = facet_wrap(season2 ~ model, scales = "free", ncol = 2)
+lab = labs(x = "Abundance index from the VAST", y = "Prediction", title = "Kouika")
+l = geom_abline(intercept = 0, slope = 1, colour = "red") 
+g+p+f+lab+theme_bw()+l
 
 
 # kurumaebi -----------------------
