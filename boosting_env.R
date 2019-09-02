@@ -47,6 +47,7 @@ train_isi = train(
   tuneLength = 5
 )
 save(train_isi, file = paste0("tuned_params_isi", ".RData"))
+load("tuned_params_isi.RData")
 
 best_isi = train_isi$bestTune
 params = list(
@@ -63,7 +64,7 @@ params = list(
 
 for(i in 1:4){
   assign(paste0("isi", i),
-         isi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+         isi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
   )
 }
 
@@ -167,6 +168,7 @@ train_kono = train(
   tuneLength = 5
 )
 save(train_kono, file = paste0("tuned_params_kono", ".RData"))
+load("tuned_params_kono.RData")
 
 best_kono = train_kono$bestTune
 params = list(
@@ -183,7 +185,7 @@ params = list(
 
 for(i in 1:4){
   assign(paste0("kono", i),
-         kono %>% filter(n_season == i) %>% select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+         kono %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
   )
 }
 
@@ -287,6 +289,7 @@ train_ika = train(
   tuneLength = 5
 )
 save(train_ika, file = paste0("tuned_params_ika", ".RData"))
+load("tuned_params_ika.RData")
 
 best_ika = train_ika$bestTune
 params = list(
@@ -303,7 +306,7 @@ params = list(
 
 for(i in 1:4){
   assign(paste0("ika", i),
-         ika %>% filter(n_season == i) %>% select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+         ika %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
   )
 }
 
@@ -408,6 +411,7 @@ train_ebi = train(
   tuneLength = 5
 )
 save(train_ebi, file = paste0("tuned_params_ebi", ".RData"))
+load("tuned_params_ebi.RData")
 
 best_ebi = train_ebi$bestTune
 params = list(
@@ -424,7 +428,7 @@ params = list(
 
 for(i in 1:4){
   assign(paste0("ebi", i),
-         ebi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+         ebi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
   )
 }
 
@@ -529,6 +533,7 @@ train_ana = train(
   tuneLength = 5
 )
 save(train_ana, file = paste0("tuned_params_ana", ".RData"))
+load("tuned_params_ana.RData")
 
 best_ana = train_ana$bestTune
 params = list(
@@ -545,7 +550,7 @@ params = list(
 
 for(i in 1:4){
   assign(paste0("ana", i),
-         ana %>% filter(n_season == i) %>% select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+         ana %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
   )
 }
 
@@ -651,6 +656,7 @@ train_mako = train(
   tuneLength = 5
 )
 save(train_mako, file = paste0("tuned_params_mako", ".RData"))
+load("tuned_params_mako.RData")
 
 best_mako = train_mako$bestTune
 params = list(
@@ -667,7 +673,7 @@ params = list(
 
 for(i in 1:4){
   assign(paste0("mako", i),
-         mako %>% filter(n_season == i) %>% select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+         mako %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
   )
 }
 
@@ -773,6 +779,7 @@ train_suzu = train(
   tuneLength = 5
 )
 save(train_suzu, file = paste0("tuned_params_suzu", ".RData"))
+load("tuned_params_suzu.RData")
 
 best_suzu = train_suzu$bestTune
 params = list(
@@ -789,7 +796,7 @@ params = list(
 
 for(i in 1:4){
   assign(paste0("suzu", i),
-         suzu %>% filter(n_season == i) %>% select(log_abundance, do_0, do_mid, do_50, sal_0, sal_mid, sal_50, wt_0, wt_mid, wt_50)
+         suzu %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
   )
 }
 
