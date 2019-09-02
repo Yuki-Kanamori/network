@@ -102,15 +102,15 @@ for(i in 1:4){
     nrounds = nrounds,
     params = params)
   
-  #save(model, file = paste0("model_isi", i, ".RData"))
-  assign(paste0("model_isi", i),
+  save(model, file = paste0("model_isi_full", i, ".RData"))
+  assign(paste0("model_isi_full", i),
          model)
 }
 
 isi_imp = c()
 for(i in 1:4){
   data = get(paste0("tr_isi", i))
-  model = get(paste0("model_isi", i))
+  model = get(paste0("model_isi_full", i))
   imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
   imp$n_season = paste0(i)
   isi_imp = rbind(isi_imp, imp)
@@ -119,7 +119,7 @@ for(i in 1:4){
 isi_pred = c()
 for(i in 1:4){
   data = get(paste0("te_isi", i))
-  model = get(paste0("model_isi", i))
+  model = get(paste0("model_isi_full", i))
   pred = data.frame(predict(model, as.matrix(data[, -1])), data[, 1])
   colnames(pred) = c("pred", "obs")
   pred$n_season = paste0(i)
@@ -175,8 +175,8 @@ for(i in 1:4){
 
 pre_boo_isi = c()
 for(i in 1:4){
-  load(paste0("model_isi",i,".RData"))
-  model = get(paste0("model_isi", i))
+  load(paste0("model_isi_full",i,".RData"))
+  model = get(paste0("model_isi_full", i))
   data = get(paste0("isi", i))
   
   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
@@ -279,15 +279,15 @@ for(i in 1:4){
     nrounds = nrounds,
     params = params)
   
-  save(model, file = paste0("model_kono", i, ".RData"))
-  assign(paste0("model_kono", i),
+  save(model, file = paste0("model_kono_full", i, ".RData"))
+  assign(paste0("model_kono_full", i),
          model)
 }
 
 kono_imp = c()
 for(i in 1:4){
   data = get(paste0("tr_kono", i))
-  model = get(paste0("model_kono", i))
+  model = get(paste0("model_kono_full", i))
   imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
   imp$n_season = paste0(i)
   kono_imp = rbind(kono_imp, imp)
@@ -296,7 +296,7 @@ for(i in 1:4){
 kono_pred = c()
 for(i in 1:4){
   data = get(paste0("te_kono", i))
-  model = get(paste0("model_kono", i))
+  model = get(paste0("model_kono_full", i))
   pred = data.frame(predict(model, as.matrix(data[, -1])), data[, 1])
   colnames(pred) = c("pred", "obs")
   pred$n_season = paste0(i)
@@ -353,8 +353,8 @@ for(i in 1:4){
 
 pre_boo_kono = c()
 for(i in 1:4){
-  load(paste0("model_kono",i,".RData"))
-  model = get(paste0("model_kono", i))
+  load(paste0("model_kono_full",i,".RData"))
+  model = get(paste0("model_kono_full", i))
   data = get(paste0("kono", i))
   
   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
@@ -458,15 +458,15 @@ for(i in 1:4){
     nrounds = nrounds,
     params = params)
   
-  save(model, file = paste0("model_ika", i, ".RData"))
-  assign(paste0("model_ika", i),
+  save(model, file = paste0("model_ika_full", i, ".RData"))
+  assign(paste0("model_ika_full", i),
          model)
 }
 
 ika_imp = c()
 for(i in 1:4){
   data = get(paste0("tr_ika", i))
-  model = get(paste0("model_ika", i))
+  model = get(paste0("model_ika_full", i))
   imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
   imp$n_season = paste0(i)
   ika_imp = rbind(ika_imp, imp)
@@ -475,7 +475,7 @@ for(i in 1:4){
 ika_pred = c()
 for(i in 1:4){
   data = get(paste0("te_ika", i))
-  model = get(paste0("model_ika", i))
+  model = get(paste0("model_ika_full", i))
   pred = data.frame(predict(model, as.matrix(data[, -1])), data[, 1])
   colnames(pred) = c("pred", "obs")
   pred$n_season = paste0(i)
@@ -533,8 +533,8 @@ for(i in 1:4){
 
 pre_boo_ika = c()
 for(i in 1:4){
-  load(paste0("model_ika",i,".RData"))
-  model = get(paste0("model_ika", i))
+  load(paste0("model_ika_full",i,".RData"))
+  model = get(paste0("model_ika_full", i))
   data = get(paste0("ika", i))
   
   boo = data.frame(pred = predict(model, as.matrix(data[, -1])), obs = data[, 1])
@@ -636,15 +636,15 @@ for(i in 1:4){
     nrounds = nrounds,
     params = params)
   
-  save(model, file = paste0("model_ebi", i, ".RData"))
-  assign(paste0("model_ebi", i),
+  save(model, file = paste0("model_ebi_full", i, ".RData"))
+  assign(paste0("model_ebi_full", i),
          model)
 }
 
 ebi_imp = c()
 for(i in 1:4){
   data = get(paste0("tr_ebi", i))
-  model = get(paste0("model_ebi", i))
+  model = get(paste0("model_ebi_full", i))
   imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
   imp$n_season = paste0(i)
   ebi_imp = rbind(ebi_imp, imp)
@@ -653,7 +653,7 @@ for(i in 1:4){
 ebi_pred = c()
 for(i in 1:4){
   data = get(paste0("te_ebi", i))
-  model = get(paste0("model_ebi", i))
+  model = get(paste0("model_ebi_full", i))
   pred = data.frame(predict(model, as.matrix(data[, -1])), data[, 1])
   colnames(pred) = c("pred", "obs")
   pred$n_season = paste0(i)
@@ -756,15 +756,15 @@ for(i in 1:4){
     nrounds = nrounds,
     params = params)
   
-  save(model, file = paste0("model_ana", i, ".RData"))
-  assign(paste0("model_ana", i),
+  save(model, file = paste0("model_ana_full", i, ".RData"))
+  assign(paste0("model_ana_full", i),
          model)
 }
 
 ana_imp = c()
 for(i in 1:4){
   data = get(paste0("tr_ana", i))
-  model = get(paste0("model_ana", i))
+  model = get(paste0("model_ana_full", i))
   imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
   imp$n_season = paste0(i)
   ana_imp = rbind(ana_imp, imp)
@@ -773,7 +773,7 @@ for(i in 1:4){
 ana_pred = c()
 for(i in 1:4){
   data = get(paste0("te_ana", i))
-  model = get(paste0("model_ana", i))
+  model = get(paste0("model_ana_full", i))
   pred = data.frame(predict(model, as.matrix(data[, -1])), data[, 1])
   colnames(pred) = c("pred", "obs")
   pred$n_season = paste0(i)
@@ -877,15 +877,15 @@ for(i in 1:4){
     nrounds = nrounds,
     params = params)
   
-  save(model, file = paste0("model_mako", i, ".RData"))
-  assign(paste0("model_mako", i),
+  save(model, file = paste0("model_mako_full", i, ".RData"))
+  assign(paste0("model_mako_full", i),
          model)
 }
 
 mako_imp = c()
 for(i in 1:4){
   data = get(paste0("tr_mako", i))
-  model = get(paste0("model_mako", i))
+  model = get(paste0("model_mako_full", i))
   imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
   imp$n_season = paste0(i)
   mako_imp = rbind(mako_imp, imp)
@@ -894,7 +894,7 @@ for(i in 1:4){
 mako_pred = c()
 for(i in 1:4){
   data = get(paste0("te_mako", i))
-  model = get(paste0("model_mako", i))
+  model = get(paste0("model_mako_full", i))
   pred = data.frame(predict(model, as.matrix(data[, -1])), data[, 1])
   colnames(pred) = c("pred", "obs")
   pred$n_season = paste0(i)
@@ -998,15 +998,15 @@ for(i in 1:4){
     nrounds = nrounds,
     params = params)
   
-  save(model, file = paste0("model_suzu", i, ".RData"))
-  assign(paste0("model_suzu", i),
+  save(model, file = paste0("model_suzu_full", i, ".RData"))
+  assign(paste0("model_suzu_full", i),
          model)
 }
 
 suzu_imp = c()
 for(i in 1:4){
   data = get(paste0("tr_suzu", i))
-  model = get(paste0("model_suzu", i))
+  model = get(paste0("model_suzu_full", i))
   imp = xgb.importance(colnames(as.matrix(data %>% mutate(log_abundance = NULL))), model = model)
   imp$n_season = paste0(i)
   suzu_imp = rbind(suzu_imp, imp)
@@ -1015,7 +1015,7 @@ for(i in 1:4){
 suzu_pred = c()
 for(i in 1:4){
   data = get(paste0("te_suzu", i))
-  model = get(paste0("model_suzu", i))
+  model = get(paste0("model_suzu_full", i))
   pred = data.frame(predict(model, as.matrix(data[, -1])), data[, 1])
   colnames(pred) = c("pred", "obs")
   pred$n_season = paste0(i)
