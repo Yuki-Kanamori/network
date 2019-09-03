@@ -218,20 +218,21 @@ th = theme(#panel.grid.major = element_blank(),
 fig = g+p+f+lab+theme_bw()+l+th
 ggsave("pred_obs_isi.pdf", g+p+f+lab+theme_bw()+l+th, width = 11.69, height = 8.27)
 
-###response curve###
+
+# ALE plot ------------------------------------------------------
 require(DALEX)
 require(ALEPlot)
 for(j in 1:4){
   setwd("/Users/Yuki/Dropbox/Network/revised_data")
-    model = load(paste0("model_isi", j, ".RData"))
+    model = get(load(paste0("model_isi", j, ".RData")))
     data = get(paste0("isi",j))
     exp = DALEX::explain(model, data = as.matrix(data[,-1]), y = data[,1])
     
     list = c()
     for(i in 1:6){
       env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
-      ale = DALEX::variable_response(exp_isi1, variable = paste0(env), type = "ale")
-      ale = ale %>% mutate(n_season = paste0(i))
+      ale = DALEX::variable_response(exp, variable = env, type = "ale")
+      ale = ale %>% mutate(n_season = paste0(j), species = "isigarei")
       list = rbind(list, ale)
     }
     
@@ -239,40 +240,17 @@ for(j in 1:4){
            list)
 }
 
+# exp_isi2 = DALEX::explain(model_isi2, data = as.matrix(isi2[,-1]), y = isi2[,1])
+# ale_isi2 = DALEX::variable_response(exp_isi2, variable = "do_50", type = "ale")
+# ale_isi2 %>% plot()
 
 
-exp_isi1 = DALEX::explain(model_isi1, data = as.matrix(isi1[,-1]), y = isi1[,1])
-# ale_isi1 = DALEX::variable_response(exp_isi1, variable = "wt_50", type = "ale")
-# ale_isi1 %>% plot()
-ale_isi1 = c()
-for(i in 1:6){
-  env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
-  ale = DALEX::variable_response(exp_isi1, variable = paste0(env), type = "ale")
-  ale = ale %>% mutate(env = paste0(env), n_season = paste0(i))
-  ale_isi1 = rbind(ael_isi1, ael)
-}
+# require(ingredients)
+# cp_isi4 = ceteris_paribus(exp_xgb_isi4, new_observation = as.matrix(te_isi4[,-1]), y = te_isi4[,1])
+# plot(cp_isi4, variables = c("do_0", "do_50")) + show_observations(cp_isi4, variables = c("do_0", "do_50"))
 
 
-exp_isi2 = DALEX::explain(model_isi2, data = as.matrix(isi2[,-1]), y = isi2[,1])
-ale_isi2 = DALEX::variable_response(exp_isi2, variable = "do_50", type = "ale")
-ale_isi2 %>% plot()
-
-exp_xgb_isi3 = DALEX::explain(model_isi3, data = as.matrix(isi3[,-1]), y = isi3[,1])
-ale_isi3 = DALEX::variable_response(exp_xgb_isi3, variable = "sal_50", type = "ale")
-ale_isi3 %>% plot()
-
-exp_xgb_isi4 = DALEX::explain(model_isi4, data = as.matrix(isi4[,-1]), y = isi4[,1])
-ale_xgb = DALEX::variable_response(exp_xgb_isi4, variable = "sal_50", type = "ale")
-ale_xgb %>% plot()
-
-
-
-require(ingredients)
-cp_isi4 = ceteris_paribus(exp_xgb_isi4, new_observation = as.matrix(te_isi4[,-1]), y = te_isi4[,1])
-plot(cp_isi4, variables = c("do_0", "do_50")) + show_observations(cp_isi4, variables = c("do_0", "do_50"))
-
-
-#ICE+PDP
+# ICE+PDP -------------------------------------------------------
 require(pdp)
 pdp::partial(model_isi1, pred.var = "do_50", train = as.matrix(isi1[, -1]), plot = T, ice = T, alpha = 0.1, plot.engine = "ggplot2")
 pdp::partial(model_isi2, pred.var = "do_50", train = as.matrix(isi2[, -1]), plot = T, ice = T, alpha = 0.1, plot.engine = "ggplot2")
@@ -468,6 +446,27 @@ th = theme(#panel.grid.major = element_blank(),
 g+p+f+lab+theme_bw()+l+th
 
 
+# ALE plot ------------------------------------------------------
+require(DALEX)
+require(ALEPlot)
+for(j in 1:4){
+  setwd("/Users/Yuki/Dropbox/Network/revised_data")
+  model = get(load(paste0("model_kono", j, ".RData")))
+  data = get(paste0("kono",j))
+  exp = DALEX::explain(model, data = as.matrix(data[,-1]), y = data[,1])
+  
+  list = c()
+  for(i in 1:6){
+    env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
+    ale = DALEX::variable_response(exp, variable = env, type = "ale")
+    ale = ale %>% mutate(n_season = paste0(j), species = "konosiro")
+    list = rbind(list, ale)
+  }
+  
+  assign(paste0("ale_kono", j),
+         list)
+}
+
 
 
 # kouika --------------------------------------------------------
@@ -660,6 +659,27 @@ th = theme(#panel.grid.major = element_blank(),
 g+p+f+lab+theme_bw()+l+th
 
 
+# ALE plot ------------------------------------------------------
+require(DALEX)
+require(ALEPlot)
+for(j in 1:4){
+  setwd("/Users/Yuki/Dropbox/Network/revised_data")
+  model = get(load(paste0("model_ika", j, ".RData")))
+  data = get(paste0("ika",j))
+  exp = DALEX::explain(model, data = as.matrix(data[,-1]), y = data[,1])
+  
+  list = c()
+  for(i in 1:6){
+    env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
+    ale = DALEX::variable_response(exp, variable = env, type = "ale")
+    ale = ale %>% mutate(n_season = paste0(j), species = "kouika")
+    list = rbind(list, ale)
+  }
+  
+  assign(paste0("ale_ika", j),
+         list)
+}
+
 
 # kurumaebi -----------------------------------------------------
 ebi = read.csv("boost_ebi.csv", fileEncoding = "CP932")
@@ -849,6 +869,28 @@ th = theme(#panel.grid.major = element_blank(),
   legend.title = element_text(size = 15),
   strip.text = element_text(size = rel(1.2)))
 g+p+f+lab+theme_bw()+l+th
+
+
+# ALE plot ------------------------------------------------------
+require(DALEX)
+require(ALEPlot)
+for(j in 1:4){
+  setwd("/Users/Yuki/Dropbox/Network/revised_data")
+  model = get(load(paste0("model_ebi", j, ".RData")))
+  data = get(paste0("ebi",j))
+  exp = DALEX::explain(model, data = as.matrix(data[,-1]), y = data[,1])
+  
+  list = c()
+  for(i in 1:6){
+    env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
+    ale = DALEX::variable_response(exp, variable = env, type = "ale")
+    ale = ale %>% mutate(n_season = paste0(j), species = "kurumaebi")
+    list = rbind(list, ale)
+  }
+  
+  assign(paste0("ale_ebi", j),
+         list)
+}
 
 
 # maanago -------------------------------------------------------
@@ -1042,6 +1084,28 @@ th = theme(#panel.grid.major = element_blank(),
 g+p+f+lab+theme_bw()+l+th
 
 
+# ALE plot ------------------------------------------------------
+require(DALEX)
+require(ALEPlot)
+for(j in 1:4){
+  setwd("/Users/Yuki/Dropbox/Network/revised_data")
+  model = get(load(paste0("model_ana", j, ".RData")))
+  data = get(paste0("ana",j))
+  exp = DALEX::explain(model, data = as.matrix(data[,-1]), y = data[,1])
+  
+  list = c()
+  for(i in 1:6){
+    env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
+    ale = DALEX::variable_response(exp, variable = env, type = "ale")
+    ale = ale %>% mutate(n_season = paste0(j), species = "maanago")
+    list = rbind(list, ale)
+  }
+  
+  assign(paste0("ale_ana", j),
+         list)
+}
+
+
 # makogarei -----------------------------------------------------
 mako = read.csv("boost_mako.csv", fileEncoding = "CP932")
 mako = mako[, -1]
@@ -1233,6 +1297,28 @@ th = theme(panel.grid.major = element_blank(),
 g+p+f+lab+theme_bw()+l+th
 
 
+# ALE plot ------------------------------------------------------
+require(DALEX)
+require(ALEPlot)
+for(j in 1:4){
+  setwd("/Users/Yuki/Dropbox/Network/revised_data")
+  model = get(load(paste0("model_mako", j, ".RData")))
+  data = get(paste0("mako",j))
+  exp = DALEX::explain(model, data = as.matrix(data[,-1]), y = data[,1])
+  
+  list = c()
+  for(i in 1:6){
+    env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
+    ale = DALEX::variable_response(exp, variable = env, type = "ale")
+    ale = ale %>% mutate(n_season = paste0(j), species = "makogarei")
+    list = rbind(list, ale)
+  }
+  
+  assign(paste0("ale_mako", j),
+         list)
+}
+
+
 
 # suzuki --------------------------------------------------------
 suzu = read.csv("boost_suzu.csv", fileEncoding = "CP932")
@@ -1422,3 +1508,36 @@ th = theme(#panel.grid.major = element_blank(),
   legend.title = element_text(size = 15),
   strip.text = element_text(size = rel(1.2)))
 g+p+f+lab+theme_bw()+l+th
+
+
+# ALE plot ------------------------------------------------------
+require(DALEX)
+require(ALEPlot)
+for(j in 1:4){
+  setwd("/Users/Yuki/Dropbox/Network/revised_data")
+  model = get(load(paste0("model_suzu", j, ".RData")))
+  data = get(paste0("suzu",j))
+  exp = DALEX::explain(model, data = as.matrix(data[,-1]), y = data[,1])
+  
+  list = c()
+  for(i in 1:6){
+    env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
+    ale = DALEX::variable_response(exp, variable = env, type = "ale")
+    ale = ale %>% mutate(n_season = paste0(j), species = "suzuki")
+    list = rbind(list, ale)
+  }
+  
+  assign(paste0("ale_suzu", j),
+         list)
+}
+
+
+ale = rbind(ale_isi1,ale_isi2,ale_isi3,ale_isi4,ale_kono1,ale_kono2,ale_kono3,ale_kono4, ale_ika1,ale_ika2,ale_ika3,ale_ika4,
+            ale_ebi1,ale_ebi2,ale_ebi3,ale_ika4,ale_ana1,ale_ana2,ale_ana3,ale_ana4,ale_mako1,ale_mako2,ale_mako3,ale_mako4,
+            ale_suzu1,ale_suzu2,ale_suzu3,ale_suzu4)
+write.csv(ale, "ale_all.csv")
+
+g = ggplot(ale, aes(x = x, y = y, group = species, colour = species))
+l = geom_line()
+f = facet_wrap(var ~ n_season, ncol = 4, scales = "free")
+g+l+f+theme_bw()
