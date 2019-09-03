@@ -153,19 +153,19 @@ require(lme4)
 require(glmmTMB)
 #require(car)
 
-# for(i in 1:4){
-#   assign(paste0("isi", i),
-#          isi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
-#   )
-# }
+ for(i in 1:4){
+   assign(paste0("isi", i),
+          isi %>% filter(n_season == i) %>% select(log_abundance, do_0, do_50, sal_0, sal_50, wt_0, wt_50)
+   )
+ }
 # summary(isi1)
 # 
-# for(i in 1:4){
-#   data = get(paste0("isi",i))
-#   data = na.omit(data)
-#   assign(paste0("isi", i),
-#          normalizeFeatures(data, target = "log_abundance"))
-# }
+ for(i in 1:4){
+   data = get(paste0("isi",i))
+   data = na.omit(data)
+   assign(paste0("isi", i),
+          normalizeFeatures(data, target = "log_abundance"))
+ }
 
 pre_glm_isi = c()
 for(i in 1:4){
@@ -215,15 +215,68 @@ th = theme(#panel.grid.major = element_blank(),
   axis.title.y = element_text(size = rel(2)),
   legend.title = element_text(size = 15),
   strip.text = element_text(size = rel(1.2)))
-g+p+f+lab+theme_bw()+l+th
-
+fig = g+p+f+lab+theme_bw()+l+th
+ggsave("pred_obs_isi.pdf", g+p+f+lab+theme_bw()+l+th, width = 11.69, height = 8.27)
 
 ###response curve###
 require(DALEX)
 require(ALEPlot)
-exp_xgb = DALEX::explain(model_isi1, data = as.matrix(te_isi1[,-1]), y = te_isi1[,1])
-ale_xgb = DALEX::variable_response(exp_xgb, variable = "do_50", type = "ale")
+for(j in 1:4){
+  setwd("/Users/Yuki/Dropbox/Network/revised_data")
+    model = load(paste0("model_isi", j, ".RData"))
+    data = get(paste0("isi",j))
+    exp = DALEX::explain(model, data = as.matrix(data[,-1]), y = data[,1])
+    
+    list = c()
+    for(i in 1:6){
+      env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
+      ale = DALEX::variable_response(exp_isi1, variable = paste0(env), type = "ale")
+      ale = ale %>% mutate(n_season = paste0(i))
+      list = rbind(list, ale)
+    }
+    
+    assign(paste0("ale_isi", j),
+           list)
+}
+
+
+
+exp_isi1 = DALEX::explain(model_isi1, data = as.matrix(isi1[,-1]), y = isi1[,1])
+# ale_isi1 = DALEX::variable_response(exp_isi1, variable = "wt_50", type = "ale")
+# ale_isi1 %>% plot()
+ale_isi1 = c()
+for(i in 1:6){
+  env = c("do_0", "do_50", "sal_0", "sal_50", "wt_0", "wt_50")[i]
+  ale = DALEX::variable_response(exp_isi1, variable = paste0(env), type = "ale")
+  ale = ale %>% mutate(env = paste0(env), n_season = paste0(i))
+  ale_isi1 = rbind(ael_isi1, ael)
+}
+
+
+exp_isi2 = DALEX::explain(model_isi2, data = as.matrix(isi2[,-1]), y = isi2[,1])
+ale_isi2 = DALEX::variable_response(exp_isi2, variable = "do_50", type = "ale")
+ale_isi2 %>% plot()
+
+exp_xgb_isi3 = DALEX::explain(model_isi3, data = as.matrix(isi3[,-1]), y = isi3[,1])
+ale_isi3 = DALEX::variable_response(exp_xgb_isi3, variable = "sal_50", type = "ale")
+ale_isi3 %>% plot()
+
+exp_xgb_isi4 = DALEX::explain(model_isi4, data = as.matrix(isi4[,-1]), y = isi4[,1])
+ale_xgb = DALEX::variable_response(exp_xgb_isi4, variable = "sal_50", type = "ale")
 ale_xgb %>% plot()
+
+
+
+require(ingredients)
+cp_isi4 = ceteris_paribus(exp_xgb_isi4, new_observation = as.matrix(te_isi4[,-1]), y = te_isi4[,1])
+plot(cp_isi4, variables = c("do_0", "do_50")) + show_observations(cp_isi4, variables = c("do_0", "do_50"))
+
+
+#ICE+PDP
+require(pdp)
+pdp::partial(model_isi1, pred.var = "do_50", train = as.matrix(isi1[, -1]), plot = T, ice = T, alpha = 0.1, plot.engine = "ggplot2")
+pdp::partial(model_isi2, pred.var = "do_50", train = as.matrix(isi2[, -1]), plot = T, ice = T, alpha = 0.1, plot.engine = "ggplot2")
+
 
 # konosiro ------------------------------------------------------
 kono = read.csv("boost_kono.csv", fileEncoding = "CP932")
