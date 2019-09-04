@@ -1537,13 +1537,14 @@ for(j in 1:4){
 
 
 ale = rbind(ale_isi1,ale_isi2,ale_isi3,ale_isi4,ale_kono1,ale_kono2,ale_kono3,ale_kono4, ale_ika1,ale_ika2,ale_ika3,ale_ika4,
-            ale_ebi1,ale_ebi2,ale_ebi3,ale_ika4,ale_ana1,ale_ana2,ale_ana3,ale_ana4,ale_mako1,ale_mako2,ale_mako3,ale_mako4,
+            ale_ebi1,ale_ebi2,ale_ebi3,ale_ebi4,ale_ana1,ale_ana2,ale_ana3,ale_ana4,ale_mako1,ale_mako2,ale_mako3,ale_mako4,
             ale_suzu1,ale_suzu2,ale_suzu3,ale_suzu4)
 ale = merge(ale, tag, by = "n_season")
 ale$season2 = factor(ale$season2, levels = c("Winter", "Spring", "Summer", "Autumn"))
 require(stringr)
 ale = ale %>% mutate(layer = str_sub(ale$var, 4, 6), feature = str_sub(ale$var, 1, 3)) 
 ale = ale %>% mutate(layer = ifelse(ale$layer == "_0", 0, ifelse(ale$layer == "_50", 50, ale$layer)), feature = ifelse(ale$feature == "do_", "DO", ifelse(ale$feature == "wt_", "wt", "sal")))
+summary(ale)
 write.csv(ale, "ale_all.csv")
 
 g = ggplot(ale, aes(x = x, y = y, group = species, colour = species))
@@ -1565,6 +1566,9 @@ g+l+f+lab+theme_bw()+scale_colour_manual(values = cbPalette)+th
 ggsave("response.pdf", g+l+f+lab+theme_bw()+scale_colour_manual(values = cbPalette)+th, width = 11.69, height = 8.27)
 
 ###種ごとに
+setwd("/Users/Yuki/Dropbox/Network/revised_data")
+ale = read.csv("ale_all.csv")
+head(ale, 2)
 ###底魚
 for(i in 1:7){
   #sakana = c("isigarei","konosiro","kouika","kurumaebi","maanago","makogarei","suzuki")[i]
@@ -1576,7 +1580,8 @@ for(i in 1:7){
   #グレー，オレンジ，水色，緑，黄色，青，赤，ピンク
   #cbbPalette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
   #cbPalette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00")
-  cbPalette = c("#56B4E9", "#009E73", "#E69F00", "#999999")
+  #cbPalette = c("#56B4E9", "#009E73", "#E69F00", "#999999")
+  cbPalette = c("gray50", "#ff8082", "#4dc4ff", "gold")
   l = geom_line(size = 2)
   f = facet_wrap( ~ var, ncol = 2, scales = "free")
   lab = labs(x = "Scaled feature value", y = "Predicted log abundance index", title = paste0("ALE_",sakana), colour = "Season")
@@ -1604,7 +1609,8 @@ for(i in 1:3){
   #グレー，オレンジ，水色，緑，黄色，青，赤，ピンク
   #cbbPalette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
   #cbPalette = c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00")
-  cbPalette = c("#56B4E9", "#009E73", "#E69F00", "#999999")
+  #cbPalette = c("#56B4E9", "#009E73", "#E69F00", "#999999")
+  cbPalette = c("gray50", "#ff8082", "#4dc4ff", "gold")
   l = geom_line(size = 2)
   f = facet_wrap( ~ var, ncol = 2, scales = "free")
   lab = labs(x = "Scaled feature value", y = "Predicted log abundance index", title = paste0("ALE_",sakana), colour = "Season")
