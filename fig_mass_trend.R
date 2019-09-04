@@ -23,10 +23,14 @@ for(i in 1:7){
 # g+p+e+l+f+theme_bw()
 
 
-g <- ggplot(a_data, aes(x = Year, y =  Estimate_metric_tons, fill = season))
-p <- geom_bar(stat = "identity", colour = "gray30")
-lb <- labs(x = "Year", y = "Index of abundance")
-s <- scale_fill_discrete(name = "season")
+a_data = a_data %>% mutate(season2 = ifelse(a_data$season == "WS", "Winter", ifelse(a_data$season == "SS", "Spring", ifelse(a_data$season == "SA", "Summer", "Autumn"))))
+a_data$season2 = factor(a_data$season2, levels = c("Winter","Spring","Summer","Autumn"))
+
+g <- ggplot(a_data, aes(x = Year, y =  Estimate_metric_tons, fill = season2))
+p <- geom_bar(stat = "identity", colour = "black")
+lb <- labs(x = "Year", y = "Index of abundance", fill = "Season")
+#s <- scale_fill_discrete(value = c("#56B4E9", "#009E73", "#E69F00", "#999999"))
+s = scale_fill_manual(values = c("gray50", "#ff8082", "#4dc4ff", "gold"))
 f <- facet_wrap( ~ species, ncol = 2, scales = "free")
 th <- theme(axis.text.x = element_text(size = rel(1.5)), #x軸メモリ
             axis.text.y = element_text(size = rel(1.5)), #y軸メモリ
@@ -36,5 +40,7 @@ th <- theme(axis.text.x = element_text(size = rel(1.5)), #x軸メモリ
             strip.text = element_text(size = rel(1.3)), #ファセットのタイトル
             plot.title = element_text(size = rel(2.2))) #タイトル
 x <- scale_x_continuous(breaks=c(1978, 1988, 1998, 2008, 2018))
+g+p+f+x+lb+theme_bw()+th+s
+
 tumu = g+p+f+x+lb+s+theme_bw()+th
 ggsave(filename = "tumutumu.pdf", plot = tumu, units = "in", width = 11.69, height = 8.27)
