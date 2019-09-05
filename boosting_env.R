@@ -107,6 +107,23 @@ for(i in 1:4){
          model)
 }
 
+require(lme4)
+require(glmmTMB)
+require(car)
+summary(tr_isi1)
+#glm_sar = glmmTMB(dens_sar ~ dens_anc+dens_uru+adult_sar+m_SST, data = df_mat_sar2, family = gaussian)
+glm = glm(log_abundance ~ ., data = tr_isi1, family = gaussian)
+vif(glm)
+# dens_anc     dens_uru    adult_sar        m_SST        m_PDO      knot_i2         days knot_i2:days 
+# 1.331639     1.541544     2.263286     1.201779     1.089358     6.064762     5.223176     8.630030 
+head(glm,2)
+#cor.res = cor(df_mat_sar2[, c(4:14)])
+cor.res = cor(tr_isi1)
+vif.res = 1/(1-cor.res^2)
+round(vif.res, 3)
+
+plot(isi$do_0, isi$wt_0)
+
 isi_imp = c()
 for(i in 1:4){
   data = get(paste0("tr_isi", i))
@@ -443,7 +460,9 @@ th = theme(#panel.grid.major = element_blank(),
   axis.title.y = element_text(size = rel(2)),
   legend.title = element_text(size = 15),
   strip.text = element_text(size = rel(1.2)))
-g+p+f+lab+theme_bw()+l+th
+fig = g+p+f+lab+theme_bw()+l+th
+ggsave("pred_obs_kono.pdf", g+p+f+lab+theme_bw()+l+th, width = 11.69, height = 8.27)
+
 
 
 # ALE plot ------------------------------------------------------
@@ -660,7 +679,8 @@ th = theme(#panel.grid.major = element_blank(),
   axis.title.y = element_text(size = rel(2)),
   legend.title = element_text(size = 15),
   strip.text = element_text(size = rel(1.2)))
-g+p+f+lab+theme_bw()+l+th
+fig = g+p+f+lab+theme_bw()+l+th
+ggsave("pred_obs_ika.pdf", g+p+f+lab+theme_bw()+l+th, width = 11.69, height = 8.27)
 
 
 # ALE plot ------------------------------------------------------
@@ -872,7 +892,8 @@ th = theme(#panel.grid.major = element_blank(),
   axis.title.y = element_text(size = rel(2)),
   legend.title = element_text(size = 15),
   strip.text = element_text(size = rel(1.2)))
-g+p+f+lab+theme_bw()+l+th
+fig = g+p+f+lab+theme_bw()+l+th
+ggsave("pred_obs_ebi.pdf", g+p+f+lab+theme_bw()+l+th, width = 11.69, height = 8.27)
 
 
 # ALE plot ------------------------------------------------------
@@ -1085,7 +1106,8 @@ th = theme(#panel.grid.major = element_blank(),
   axis.title.y = element_text(size = rel(2)),
   legend.title = element_text(size = 15),
   strip.text = element_text(size = rel(1.2)))
-g+p+f+lab+theme_bw()+l+th
+fig = g+p+f+lab+theme_bw()+l+th
+ggsave("pred_obs_ana.pdf", g+p+f+lab+theme_bw()+l+th, width = 11.69, height = 8.27)
 
 
 # ALE plot ------------------------------------------------------
@@ -1298,7 +1320,8 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.y = element_text(size = rel(2)),
            legend.title = element_text(size = 15),
            strip.text = element_text(size = rel(1)))
-g+p+f+lab+theme_bw()+l+th
+fig = g+p+f+lab+theme_bw()+l+th
+ggsave("pred_obs_mako.pdf", g+p+f+lab+theme_bw()+l+th, width = 11.69, height = 8.27)
 
 
 # ALE plot ------------------------------------------------------
@@ -1463,7 +1486,7 @@ require(glmmTMB)
           normalizeFeatures(data, target = "log_abundance"))
  }
 
-pre_glm_mako = c()
+pre_glm_suzu = c()
 for(i in 1:4){
   data = get(paste0("tr_suzu", i))
   p_data = get(paste0("te_suzu", i))
@@ -1471,7 +1494,7 @@ for(i in 1:4){
   glm = glm(log_abundance ~ ., data = data, family = gaussian)
   pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
   pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
-  pre_glm_mako = rbind(pre_glm_mako, pre_glm)
+  pre_glm_suzu = rbind(pre_glm_suzu, pre_glm)
 }
 
 # pre_boo_mako = c()
@@ -1486,8 +1509,8 @@ for(i in 1:4){
 #   pre_boo_mako = rbind(pre_boo_mako, boo)
 # }
 
-mako_pred$model = "Boosting"
-comp_glm_mako = rbind(pre_glm_suzu, suzu_pred)
+suzu_pred$model = "Boosting"
+comp_glm_suzu = rbind(pre_glm_suzu, suzu_pred)
 head(suzu)
 tag = distinct(suzu[, 3:4], .keep_all = F)
 tag$season2 = c("Winter", "Summer", "Spring", "Autumn")
@@ -1511,7 +1534,8 @@ th = theme(#panel.grid.major = element_blank(),
   axis.title.y = element_text(size = rel(2)),
   legend.title = element_text(size = 15),
   strip.text = element_text(size = rel(1.2)))
-g+p+f+lab+theme_bw()+l+th
+fig = g+p+f+lab+theme_bw()+l+th
+ggsave("pred_obs_suzu.pdf", g+p+f+lab+theme_bw()+l+th, width = 11.69, height = 8.27)
 
 
 # ALE plot ------------------------------------------------------
