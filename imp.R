@@ -20,8 +20,17 @@ mode(imp$Gain)
 g = ggplot(imp, aes(x = Feature, y = Gain, fill = Gain))
 b = geom_bar(stat = "identity")
 f = facet_grid(species ~ season2)
-lab = labs(y = "Importance")
-th = theme(axis.text.x = element_text(angle = 90, hjust = 1))
+lab = labs(y = "Importance", colour = "")
+th = theme(#panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(size = rel(2), angle = 90, hjust = 1),
+  axis.text.y = element_text(size = rel(1.2)),
+  axis.title.x = element_text(size = rel(2)),
+  axis.title.y = element_text(size = rel(2)),
+  legend.title = element_text(size = 15),
+  strip.text = element_text(size = rel(1.2)))
 c = scale_fill_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red"))
 g+b+f+theme_bw()+th+lab+c
 ggsave("imp.pdf", g+b+f+theme_bw()+th+lab+c, width = 11.96, height = 8.27)
+
+
