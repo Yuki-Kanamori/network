@@ -64,6 +64,15 @@ write.csv(env, "env_data.csv", fileEncoding = "CP932")
 
 setwd("/Users/Yuki/Dropbox/Network/revised_data")
 env = read.csv("env_data.csv", fileEncoding = "CP932")
+head(env)
+summary(env)
+do = env %>% filter(env == "DO")
+sal = env %>% filter(env == "salinity")
+wt = env %>% filter(env == "w_temperature")
+plot(do$value, wt$value, ylim = c(0, 30), xlim = c(0,20))
+plot(sal$value, wt$value, ylim = c(0, 30), xlim = c(0,35))
+plot(sal$value, do$value, ylim = c(0, 20), xlim = c(0,40))
+
 require(plyr)
 env2 = env
 env2 = na.omit(env2)
