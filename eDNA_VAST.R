@@ -155,6 +155,7 @@ site <- read.table("sampling_points.txt", header = T)
 site <- site[, -1]
 head(site, 1)
 colnames(site) <- c("Lon", "Lat", "Site")
+site$times <- c(16,16,16,16,16,16,16,16,16,16,10,10,10,10)
 pa <- merge(pa, site, by = "Site")
 summary(pa$Count)
 pa$Count2 <- ifelse(pa$Count > 0, 1, 0)
@@ -167,57 +168,64 @@ p <- geom_point(data = filter(sum, Species == "Maanago"), aes(x = Lon, y = Lat, 
 f <- facet_wrap( ~ Depth, ncol = 2)
 s <- scale_colour_gradientn(colours = c("blue", "cyan", "green", "yellow", "orange", "red"))
 lb <- labs(color = "Appearance ratio", title = "Maanago")
-th <- theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.text.x = element_text(size = rel(1), angle = 90, hjust = 1), #x軸メモリ
-            axis.text.y = element_text(size = rel(1)), #y軸メモリ
-            axis.title.x = element_text(size = rel(1)), #x軸タイトル
-            axis.title.y = element_text(size = rel(1)),
-            #strip.text.y = element_text(size = 100),
-            legend.title = element_text(size = 10))
-t2+p+f+s+lb+th+theme_bw()
+th = theme(panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  axis.text.x = element_text(size = rel(1.5), angle = 90, hjust = 1),
+  axis.text.y = element_text(size = rel(1.5)),
+  axis.title.x = element_text(size = rel(2)),
+  axis.title.y = element_text(size = rel(2)),
+  legend.title = element_text(size = 15),
+  strip.text = element_text(size = rel(1.5)))
+t2+p+f+s+lb+theme_bw()+th+scale_x_continuous(breaks=seq(139.5, 140.1, 0.2))
+ggsave("maanago.pdf", t2+p+f+s+lb+theme_bw()+th+scale_x_continuous(breaks=seq(139.5, 140.1, 0.2)), width = 11.69, height = 8.27)
 
 ###スズキ
 p <- geom_point(data = filter(sum, Species == "Suzuki"), aes(x = Lon, y = Lat, colour = Freq), shape = 16, size = 5)
 f <- facet_wrap( ~ Depth, ncol = 2)
 s <- scale_colour_gradientn(colours = c("blue", "cyan", "green", "yellow", "orange", "red"))
 lb <- labs(color = "Appearance ratio", title = "Suzuki")
-th <- theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.text.x = element_text(size = rel(1), angle = 90, hjust = 1), #x軸メモリ
-            axis.text.y = element_text(size = rel(1)), #y軸メモリ
-            axis.title.x = element_text(size = rel(1)), #x軸タイトル
-            axis.title.y = element_text(size = rel(1)),
-            legend.title = element_text(size = 10))
-t2+p+f+s+lb+th+theme_bw()
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.5), angle = 90, hjust = 1),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_text(size = 15),
+           strip.text = element_text(size = rel(1.5)))
+t2+p+f+s+lb+theme_bw()+th+scale_x_continuous(breaks=seq(139.5, 140.1, 0.2))
+ggsave("suzuki.pdf", t2+p+f+s+lb+theme_bw()+th+scale_x_continuous(breaks=seq(139.5, 140.1, 0.2)), width = 11.69, height = 8.27)
 
 ###マコガレイ
 p <- geom_point(data = filter(sum, Species == "Makogarei"), aes(x = Lon, y = Lat, colour = Freq), shape = 16, size = 5)
 f <- facet_wrap( ~ Depth, ncol = 2)
 s <- scale_colour_gradientn(colours = c("blue", "cyan", "green", "yellow", "orange", "red"))
 lb <- labs(color = "Appearane ratio", title = "Makogarei")
-th <- theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.text.x = element_text(size = rel(1), angle = 90, hjust = 1), #x軸メモリ
-            axis.text.y = element_text(size = rel(1)), #y軸メモリ
-            axis.title.x = element_text(size = rel(1)), #x軸タイトル
-            axis.title.y = element_text(size = rel(1)),
-            legend.title = element_text(size = 10))
-t2+p+f+s+lb+th+theme_bw()
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.5), angle = 90, hjust = 1),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_text(size = 15),
+           strip.text = element_text(size = rel(1.5)))
+t2+p+f+s+lb+theme_bw()+th+scale_x_continuous(breaks=seq(139.5, 140.1, 0.2))
+ggsave("makogarei.pdf", t2+p+f+s+lb+theme_bw()+th+scale_x_continuous(breaks=seq(139.5, 140.1, 0.2)), width = 11.69, height = 8.27)
 
 ###コノシロ
 p <- geom_point(data = filter(sum, Species == "Konoshiro"), aes(x = Lon, y = Lat, colour = Freq), shape = 16, size = 5)
 f <- facet_wrap( ~ Depth, ncol = 2)
 s <- scale_colour_gradientn(colours = c("blue", "cyan", "green", "yellow", "orange", "red"))
 lb <- labs(color = "Appearance ratio", title = "Konoshiro")
-th <- theme(panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            axis.text.x = element_text(size = rel(1), angle = 90, hjust = 1), #x軸メモリ
-            axis.text.y = element_text(size = rel(1)), #y軸メモリ
-            axis.title.x = element_text(size = rel(1)), #x軸タイトル
-            axis.title.y = element_text(size = rel(1)),
-            legend.title = element_text(size = 10))
-t2+p+f+s+lb+th+theme_bw()
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.5), angle = 90, hjust = 1),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_text(size = 15),
+           strip.text = element_text(size = rel(1.5)))
+t2+p+f+s+lb+theme_bw()+th+scale_x_continuous(breaks=seq(139.5, 140.1, 0.2))
+ggsave("konoshiro.pdf", t2+p+f+s+lb+theme_bw()+th+scale_x_continuous(breaks=seq(139.5, 140.1, 0.2)), width = 11.69, height = 8.27)
 
 
 #####リード数#####
@@ -244,6 +252,7 @@ colnames(site) <- c("Lon", "Lat", "Site")
 site$times <- c(16,16,16,16,16,16,16,16,16,16,10,10,10,10)
 pa <- merge(pa, site, by = "Site")
 summary(pa$Count)
+require(plyr)
 mean <- ddply(pa, .(Year, Depth, Site, Species), summarize, Mean = exp(mean(log(Count+0.01))))
 mean <- merge(mean, site, by = "Site")
 
@@ -260,7 +269,7 @@ th <- theme(panel.grid.major = element_blank(),
             axis.title.y = element_text(size = rel(1)),
             #strip.text.y = element_text(size = 100),
             legend.title = element_text(size = 10))
-t2+p+f+s+lb+th+theme_bw()
+t2+p+f+s+lb+theme_bw()+th
 
 ###スズキ
 p <- geom_point(data = filter(mean, Species == "Suzuki"), aes(x = Lon, y = Lat, colour = Mean), shape = 16, size = 5)
