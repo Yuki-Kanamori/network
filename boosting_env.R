@@ -190,6 +190,7 @@ for(i in 1:4){
   p_data = get(paste0("te_isi", i))
   
   glm = glm(log_abundance ~ ., data = data, family = gaussian)
+  #glm = glm(log_abundance ~ (.)^2, data = data, family = gaussian)
   pre_glm = data.frame(pred = predict(glm, newdata = p_data[,-1]), obs = p_data[,1])
   pre_glm = pre_glm %>% mutate(n_season = paste0(i), model = "GLM")
   pre_glm_isi = rbind(pre_glm_isi, pre_glm)
