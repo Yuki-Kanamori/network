@@ -32,8 +32,11 @@ isi = read.csv("boost_isi.csv", fileEncoding = "CP932")
 isi = isi[, -1]
 summary(isi)
 isi = isi %>% mutate(do_mid = (do_5+do_10+do_20)/3, sal_mid = (sal_5+sal_10+sal_20)/3, wt_mid = (wt_5+wt_10+wt_20)/3)
+head(isi)
+m_space = ddply(isi, .(year, season, env), summarize, do_0s = mean(do_0), do_50s = mean(do_50), sal_0s = mean(sal_0), sal_50s = mean(sal_50), wt_0s = mean(wt_0), wt_50s = mean(wt_50))
+isi = merge(isi, m_space, by = c("year", "season", "env"))
 df_mat_isi = isi %>% 
-  select(log_abundance, do_0,do_50, sal_0, sal_50, wt_0, wt_50)
+  select(log_abundance, do_0,do_50, sal_0, sal_50, wt_0, wt_50, do_0s,do_50s, sal_0s, sal_50s, wt_0s, wt_50s)
 df_isi = na.omit(df_mat_isi)
 summary(df_isi)
 
@@ -46,7 +49,7 @@ train_isi = train(
   trControl = trainControl(method = "cv"),
   tuneLength = 5
 )
-save(train_isi, file = paste0("tuned_params_isi", ".RData"))
+save(train_isi, file = paste0("tuned_params_isi1017", ".RData"))
 load("tuned_params_isi.RData")
 
 best_isi = train_isi$bestTune
