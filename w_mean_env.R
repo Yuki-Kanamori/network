@@ -23,7 +23,7 @@ for(i in 1:7){
 }
 
 dist = array(0, dim = c(50,20,7))
-dist = matrix(0, ncol = 20, nrow = 50)
+#dist = matrix(0, ncol = 20, nrow = 50)
 a_dist = matrix(0, ncol = 1, nrow = 7)
 for(i in 1:7){
   for(j in 1:50){
@@ -54,6 +54,7 @@ env2 = rbind(filter(env, env == "w_temperature") %>% filter(value < 100),
              filter(env, env == "salinity") %>% filter(value < 100),
              filter(env, env == "DO") %>% filter(value > 0))
 require(plyr)
+# 3ヶ月を1季節としてるため，季節ごとに平均する必要がある
 env3 = ddply(env2, .(year, season, r_st, layer, env), summarize, mean = mean(value))
 summary(filter(env3, env == "w_temperature"))
 summary(filter(env3, env == "DO"))
