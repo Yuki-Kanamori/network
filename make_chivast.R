@@ -27,11 +27,16 @@ df2 = df2 %>%
   filter(between(lon, min(df$lon), max(df$lon)), between(lat, min(df$lat), max(df$lat)))
 df2$fish = ifelse(df2$fish == "akakamasu", "kamasu spp.", ifelse(df2$fish == "kamasu spp.", "kamasu spp.", ifelse(df2$fish == "kurodai", "kurodai", ifelse(df2$fish == "siroguti", "siroguti", ifelse(df2$fish == "torafugu", "torafugu", NA)))))
 summary(df2)
+na_check = df2 %>% filter(fish == "torafugu") %>% arrange(year)
+
+
 df2 = na.omit(df2)
 
 df3 = rbind(df, df2)
 summary(df3)
 levels(df3$fish)
+
+
 
 df4 = ddply(df3, .(year, fish), summarize, mean = mean(CPUE))
 summary(df4)
