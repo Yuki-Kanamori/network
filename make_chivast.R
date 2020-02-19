@@ -38,6 +38,7 @@ summary(df4)
 dirname = "/Users/Yuki/Dropbox/Network/revised_data"
 setwd(dir = dirname)
 write.csv(df4, "chivast.csv", fileEncoding = "CP932")
+df4 = df4 %>% arrange(fish, year)
 
 g = ggplot(df4, aes(x = year, y = mean), group = fish)
 b = geom_bar(stat = "identity")
