@@ -9,35 +9,22 @@ require(VAST)
 require(tidyverse)
 
 # read the data
-df = read.csv("new_chiba3.csv", fileEncoding = "CP932")
+df = read.csv("chivast.csv", fileEncoding = "CP932")
 summary(df)
-df = df %>% 
-  select(Lat, Lon, CPUE, GEAR, FISH, Y, M) %>%
-  rename(lon = Lon, lat = Lat, year = Y, month = M, gear = GEAR, fish = FISH)
-summary(df)
+df2 = df %>%
+  filter(between(year, 1990, 2018))
 
-dirname = "/Users/Yuki/Dropbox/Network"
-setwd(dir = dirname)
-df2 = read.csv("added_data.csv", fileEncoding = "CP932")
+# sakana = c("kurodai", "suzuki")
+# df3 = df3 %>%
+#   filter(fish == sakana)
+# sakana = data.frame(fish = sakana, nfish = rep(1:length(unique(sakana))))
+# df3 = merge(df3, sakana, by = "fish")
+# summary(df3)
+sakana = unique(df2$fish)
+levels(sakana)
+nsakana = data.frame(fish = levels(sakana), nfish = rep(1:11))
+df2 = merge(df2, nsakana, by = "fish")
 summary(df2)
-df2 = df2 %>%
-  select(year, month, lon, lat, CPUE, gear, species) %>%
-  rename(fish = species) %>%
-  filter(between(year, 1990, 2018)) # df2の時系列に合わせる
-df2$fish = ifelse(df2$fish == "akakamasu", "kamasu spp.", ifelse(df2$fish == "kamasu spp.", "kamasu spp.", ifelse(df2$fish == "kurodai", "kurodai", ifelse(df2$fish == "siroguti", "siroguti", ifelse(df2$fish == "torafugu", "torafugu", NA)))))
-summary(df2)
-
-df3 = rbind(df, df2)
-summary(df3)
-levels(df3$fish)
-
-sakana = c("kurodai", "suzuki")
-df3 = df3 %>%
-  filter(fish == sakana)
-sakana = data.frame(fish = sakana, nfish = rep(1:length(unique(sakana))))
-df3 = merge(df3, sakana, by = "fish")
-summary(df3)
-
 
 # 1. Settings ------------------------------------------------------
 dirname = "/Users/Yuki/Dropbox/Network/revised_data"
@@ -54,8 +41,8 @@ grid_size_km = 25
 n_x = 50
 
 # 1.3 Model settings
-FieldConfig = c(Omega1 = 2, Epsilon1 = 2, Omega2 = 2, Epsilon2 = 2) #factor analysis
-RhoConfig = c(Beta1 = 0, Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
+FieldConfig = c(Omega1 = 6, Epsilon1 = 6, Omega2 = 6, Epsilon2 = 6) #factor analysis
+RhoConfig = c(Beta1 = 2, Beta2 = 2, Epsilon1 = 2, Epsilon2 = 2) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
 OverdispersionConfig = c("Eta1" = 0, "Eta2" = 0) #overdispersion
 ObsModel = c(PosDist = 1, Link = 0)
 Options = c(SD_site_density = 0, SD_site_logdensity = 0,
@@ -70,7 +57,7 @@ strata.limits = data.frame('STRATA'="All_areas")
 Region = "others"
 
 # 1.6 Save settings
-DateFile = paste0(dirname,'/suzukuro/')
+DateFile = paste0(dirname,'/11sp_RW_lnorm_log50/')
 dir.create(DateFile)
 Record = list(Version = Version, Method = Method, grid_size_km = grid_size_km, n_x = n_x, 
               FieldConfig = FieldConfig, RhoConfig = RhoConfig, OverdispersionConfig = OverdispersionConfig, 
@@ -83,8 +70,10 @@ capture.output(Record, file = paste0(DateFile, "/Record.txt"))
 
 # 2. Prepare the data ----------------------------------------------
 # 2.1 Data-frame
-head(df3)
-Data_Geostat = df3 %>% select(year, lon, lat, CPUE, nfish) %>% rename(Year = year, Lon = lon, Lat = lat, Catch_KG = CPUE, spp = nfish)
+head(df2)
+Data_Geostat = df2 %>% select(year, lon, lat, CPUE, nfish) %>% dplyr::rename(Year = year, Lon = lon, Lat = lat, Catch_KG = CPUE, spp = nfish)
+summary(Data_Geostat)
+
 
 # 2.2 Extrapolation grid
 Extrapolation_List = FishStatsUtils::make_extrapolation_info(
