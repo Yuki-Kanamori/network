@@ -41,7 +41,7 @@ grid_size_km = 25
 n_x = 50
 
 # 1.3 Model settings
-FieldConfig = c(Omega1 = 0, Epsilon1 = 0, Omega2 = 3, Epsilon2 = 3) #factor analysis
+FieldConfig = c(Omega1 = 0, Epsilon1 = 0, Omega2 = 2, Epsilon2 = 2) #factor analysis
 RhoConfig = c(Beta1 = 0, Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
 OverdispersionConfig = c("Eta1" = 0, "Eta2" = 0) #overdispersion
 ObsModel = c(PosDist = 1, Link = 3)
@@ -57,7 +57,7 @@ strata.limits = data.frame('STRATA'="All_areas")
 Region = "others"
 
 # 1.6 Save settings
-DateFile = paste0(dirname,'/4sp_fixed_lnorm_log50_ndelta3/')
+DateFile = paste0(dirname,'/4sp_fixed_famma_log50_ndelta3/')
 dir.create(DateFile)
 Record = list(Version = Version, Method = Method, grid_size_km = grid_size_km, n_x = n_x, 
               FieldConfig = FieldConfig, RhoConfig = RhoConfig, OverdispersionConfig = OverdispersionConfig, 
@@ -142,7 +142,9 @@ Save = list("Opt" = Opt,
             "ParHat" = Obj$env$parList(Opt$par),
             "TmbData" = TmbData)
 save(Save, file = paste0(DateFile,"/Save.RData"))
-
+# setwd("/Users/Yuki/Dropbox/Network/revised_data/4sp_fixed_lnorm_log50_ndelta2")
+# DateFile = "/Users/Yuki/Dropbox/Network/revised_data/4sp_fixed_lnorm_log50_ndelta2"
+# load("Save.RData")
 # 4. Figures -------------------------------------------------------
 # 4.1 Plot data
 plot_data(Extrapolation_List = Extrapolation_List, Spatial_List = Spatial_List, Data_Geostat = Data_Geostat, PlotDir = DateFile)
@@ -242,3 +244,12 @@ plot_range_index(Report = Report,
                  Znames = colnames(TmbData$Z_xm), 
                  PlotDir = DateFile, 
                  Year_Set = Year_Set)
+# 4.11 Plot factors
+FishStatsUtils::plot_factors(Report = Report,
+                             ParHat = Obj$env$parList(),
+                             Data = TmbData,
+                             SD = Opt$SD,
+                             mapdetails_list = MapDetails_List,
+                             Year_Set = Year_Set,
+                             category_names = sakana$fish,
+                             plotdir = DateFile)
