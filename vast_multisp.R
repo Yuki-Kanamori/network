@@ -13,10 +13,10 @@ df = read.csv("chivast.csv", fileEncoding = "CP932")
 summary(df)
 df2 = df %>%
   filter(between(year, 1990, 2018))
-
-sakana = c("torafugu", "suzuki")
+levels(df2$fish)
+sakana = c("kamasu spp.", "kurodai", "siroguti", "torafugu")
 df2 = df2 %>%
-  filter(fish == sakana)
+  filter(fish %in% sakana)
 sakana = data.frame(fish = sakana, nfish = rep(1:length(unique(sakana))))
 df2 = merge(df2, sakana, by = "fish")
 summary(df2)
@@ -41,10 +41,10 @@ grid_size_km = 25
 n_x = 50
 
 # 1.3 Model settings
-FieldConfig = c(Omega1 = 2, Epsilon1 = 2, Omega2 = 2, Epsilon2 = 2) #factor analysis
-RhoConfig = c(Beta1 = 2, Beta2 = 2, Epsilon1 = 2, Epsilon2 = 2) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
+FieldConfig = c(Omega1 = 0, Epsilon1 = 0, Omega2 = 3, Epsilon2 = 3) #factor analysis
+RhoConfig = c(Beta1 = 0, Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
 OverdispersionConfig = c("Eta1" = 0, "Eta2" = 0) #overdispersion
-ObsModel = c(PosDist = 1, Link = 0)
+ObsModel = c(PosDist = 1, Link = 3)
 Options = c(SD_site_density = 0, SD_site_logdensity = 0,
             Calculate_Range = 1, Calculate_evenness = 0, 
             Calculate_effective_area = 1, Calculate_Cov_SE = 0, 
@@ -57,7 +57,7 @@ strata.limits = data.frame('STRATA'="All_areas")
 Region = "others"
 
 # 1.6 Save settings
-DateFile = paste0(dirname,'/suzutora_RW_lnorm_log50/')
+DateFile = paste0(dirname,'/4sp_fixed_lnorm_log50_ndelta3/')
 dir.create(DateFile)
 Record = list(Version = Version, Method = Method, grid_size_km = grid_size_km, n_x = n_x, 
               FieldConfig = FieldConfig, RhoConfig = RhoConfig, OverdispersionConfig = OverdispersionConfig, 
