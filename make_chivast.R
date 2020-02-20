@@ -39,6 +39,8 @@ levels(df3$fish)
 
 
 df4 = ddply(df3, .(year, fish), summarize, mean = mean(CPUE))
+df5 = ddply(df3, .(year, fish), summarize, sum = sum(CPUE)) %>% arrange(fish, year)
+
 summary(df4)
 dirname = "/Users/Yuki/Dropbox/Network/revised_data"
 setwd(dir = dirname)

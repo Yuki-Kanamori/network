@@ -14,17 +14,17 @@ summary(df)
 df2 = df %>%
   filter(between(year, 1990, 2018))
 
-# sakana = c("kurodai", "suzuki")
-# df3 = df3 %>%
-#   filter(fish == sakana)
-# sakana = data.frame(fish = sakana, nfish = rep(1:length(unique(sakana))))
-# df3 = merge(df3, sakana, by = "fish")
-# summary(df3)
-sakana = unique(df2$fish)
-levels(sakana)
-nsakana = data.frame(fish = levels(sakana), nfish = rep(1:11))
-df2 = merge(df2, nsakana, by = "fish")
+sakana = c("torafugu", "suzuki")
+df2 = df2 %>%
+  filter(fish == sakana)
+sakana = data.frame(fish = sakana, nfish = rep(1:length(unique(sakana))))
+df2 = merge(df2, sakana, by = "fish")
 summary(df2)
+# sakana = unique(df2$fish)
+# levels(sakana)
+# nsakana = data.frame(fish = levels(sakana), nfish = rep(1:11))
+# df2 = merge(df2, nsakana, by = "fish")
+# summary(df2)
 
 # 1. Settings ------------------------------------------------------
 dirname = "/Users/Yuki/Dropbox/Network/revised_data"
@@ -41,7 +41,7 @@ grid_size_km = 25
 n_x = 50
 
 # 1.3 Model settings
-FieldConfig = c(Omega1 = 6, Epsilon1 = 6, Omega2 = 6, Epsilon2 = 6) #factor analysis
+FieldConfig = c(Omega1 = 2, Epsilon1 = 2, Omega2 = 2, Epsilon2 = 2) #factor analysis
 RhoConfig = c(Beta1 = 2, Beta2 = 2, Epsilon1 = 2, Epsilon2 = 2) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
 OverdispersionConfig = c("Eta1" = 0, "Eta2" = 0) #overdispersion
 ObsModel = c(PosDist = 1, Link = 0)
@@ -57,7 +57,7 @@ strata.limits = data.frame('STRATA'="All_areas")
 Region = "others"
 
 # 1.6 Save settings
-DateFile = paste0(dirname,'/11sp_RW_lnorm_log50/')
+DateFile = paste0(dirname,'/suzutora_RW_lnorm_log50/')
 dir.create(DateFile)
 Record = list(Version = Version, Method = Method, grid_size_km = grid_size_km, n_x = n_x, 
               FieldConfig = FieldConfig, RhoConfig = RhoConfig, OverdispersionConfig = OverdispersionConfig, 
