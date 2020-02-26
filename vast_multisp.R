@@ -14,7 +14,8 @@ summary(df)
 df2 = df %>%
   filter(between(year, 1990, 2018))
 levels(df2$fish)
-sakana = c("kamasu spp.", "kurodai", "siroguti", "torafugu")
+# sakana = c("kamasu spp.", "kurodai", "siroguti", "torafugu")
+sakana = c("isigarei", "konosiro", "kouika", "kurumaebi", "maanago", "makogarei", "suzuki")
 df2 = df2 %>%
   filter(fish %in% sakana)
 sakana = data.frame(fish = sakana, nfish = rep(1:length(unique(sakana))))
@@ -41,10 +42,10 @@ grid_size_km = 25
 n_x = 50
 
 # 1.3 Model settings
-FieldConfig = c(Omega1 = 0, Epsilon1 = 0, Omega2 = 2, Epsilon2 = 2) #factor analysis
+FieldConfig = c(Omega1 = 5, Epsilon1 = 5, Omega2 = 5, Epsilon2 = 5) #factor analysis
 RhoConfig = c(Beta1 = 0, Beta2 = 0, Epsilon1 = 0, Epsilon2 = 0) #0: fixed, 1: independent, 2:RW, 3:constant, 4:AR
 OverdispersionConfig = c("Eta1" = 0, "Eta2" = 0) #overdispersion
-ObsModel = c(PosDist = 1, Link = 3)
+ObsModel = c(PosDist = 1, Link = 0)
 Options = c(SD_site_density = 0, SD_site_logdensity = 0,
             Calculate_Range = 1, Calculate_evenness = 0, 
             Calculate_effective_area = 1, Calculate_Cov_SE = 0, 
@@ -57,7 +58,7 @@ strata.limits = data.frame('STRATA'="All_areas")
 Region = "others"
 
 # 1.6 Save settings
-DateFile = paste0(dirname,'/4sp_fixed_famma_log50_ndelta3/')
+DateFile = paste0(dirname,'/7sp_fixed_lognorm_log50_5/')
 dir.create(DateFile)
 Record = list(Version = Version, Method = Method, grid_size_km = grid_size_km, n_x = n_x, 
               FieldConfig = FieldConfig, RhoConfig = RhoConfig, OverdispersionConfig = OverdispersionConfig, 
@@ -253,3 +254,17 @@ FishStatsUtils::plot_factors(Report = Report,
                              Year_Set = Year_Set,
                              category_names = sakana$fish,
                              plotdir = DateFile)
+
+Cov_List = FishStatsUtils::summarize_covariance(Report = Report, 
+                                ParHat = Obj$env$parList(), 
+                                Data = TmbData, 
+                                SD = Opt$SD, 
+                                plot_cor = TRUE,
+                                category_names = levels(Data_Geostat[, "spp"]),
+                                plotdir = DateFile, 
+                                plotTF = FieldConfig, 
+                                mgp = c(2,0.5, 0), 
+                                tck = -0.02, 
+                                oma = c(0, 5, 2, 2))
+
+
